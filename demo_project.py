@@ -7,7 +7,7 @@ import sys
 from django.conf import settings
 
 DEBUG = os.environ.get('DEBUG', 'on') == 'on'
-SECRET_KEY = os.environ.get('SECRET_KEY', os.urandom(32))
+SECRET_KEY = os.environ.get('SECRET_KEY', 'TESTTESTTESTTESTTESTTESTTESTTEST')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,testserver').split(',')
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
@@ -43,6 +43,8 @@ settings.configure(
         'django.contrib.staticfiles',
         'django.contrib.admin',
         'stagesetting',
+        'test_app',
+        'debug_toolbar',
     ),
     STATIC_ROOT=os.path.join(BASE_DIR, 'test_collectstatic'),
     STATIC_URL='/__static__/',
