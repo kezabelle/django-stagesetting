@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
+from __future__ import absolute_import
 import json
+from threading import RLock
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
-from django.db import router
 from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.utils.encoding import python_2_unicode_compatible
@@ -80,23 +82,48 @@ class RuntimeSetting(Model):
         verbose_name_plural = _("Settings")
 
 
+@python_2_unicode_compatible
 class RuntimeSettingWrapper(object):
-    __slots__ = ('settings',)
-    def __init__(self):
-        self.settings = None
+    __slots__ = ('settings', '_lock')
+    def __init__(self, settings=None):
+        self.settings = settings
+        self._lock = RLock()
+
+    def __str__(self):
+        msg_dict = {'cls': self.__class__.__name__}
+        if self.settings is None:
+            return 'Unevaluated %(cls)s' % msg_dict
+        return 'Evaluated %(cls)s' % msg_dict
+
+    def __repr__(self):
+        msg_dict = {'cls': self.__class__.__name__}
+        if self.settings is None:
+            msg_dict.update(settings=self.settings)
+            return '<%(cls)s [Unevaluated] settings=%(settings)r>' % msg_dict
+        msg_dict.update(settings=self.settings.keys())
+        return '<%(cls)s [Evaluated] settings=%(settings)r>' % msg_dict
+
+    def __dir__(self):
+        exposed = ['settings']
+        if self.settings is None:
+            return exposed
+        return self.settings.keys() + exposed
 
     def _fetch_settings(self):
         if self.settings is not None:
             return False
-        for setting in RuntimeSetting.objects.all().iterator():
-            try:
-                value = setting.value
-            except ImportError:
-                value = setting.default_value
-            self.settings[setting.key] = value
-        for default_key, default_value in registry._defaults.items():
-            if default_key not in self.settings:
+        with self._lock:
+            self.settings = {}
+            # Set up defaults which are registered.
+            for default_key, default_value in registry._defaults.items():
                 self.settings[default_key] = default_value
+
+            # Set up anything that's been configured into the database.
+            for setting in RuntimeSetting.objects.all().iterator():
+                try:
+                    self.settings[setting.key] = setting.value
+                except ValidationError:
+                    continue
         return True
 
     def __getitem__(self, item):
@@ -108,9 +135,34 @@ class RuntimeSettingWrapper(object):
         return self.settings[item]
 
     def __len__(self):
+        self._fetch_settings()
         return len(self.settings)
 
     def __contains__(self, item):
+        self._fetch_settings()
         return item in self.settings
 
     def __iter__(self):
+        self._fetch_settings()
+        return self.settings.__iter__()
+
+    def __eq__(self, other):
+        return other.settings == self.settings
+
+    def __setattr__(self, key, value):
+        raise NotImplementedError
+
+    def __delattr__(self, key):
+        raise NotImplementedError
+
+    def __setitem__(self, item, value):
+        raise NotImplementedError
+
+    def __delitem__(self, item):
+        raise NotImplementedError
+
+    def __enter__(self):
+        return self.__class__(settings=self.settings)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return True
