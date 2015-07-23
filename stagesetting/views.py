@@ -2,21 +2,22 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import logging
+from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
-from django.contrib.admin.options import IS_POPUP_VAR, \
-    get_content_type_for_model
+from django.contrib.admin.options import IS_POPUP_VAR
+from django.contrib.admin.options import get_content_type_for_model
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils.encoding import force_text
+from django.utils.encoding import force_text, force_bytes
 from django.utils.translation import ugettext_lazy as _, string_concat
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import DeleteView
 from .models import RuntimeSetting
-from .forms import CreateSettingForm
+from .forms import CreateSettingForm, AdminFieldForm
 from .utils import registry
 
 
@@ -77,7 +78,7 @@ class CreateSetting(FormView):
 class UpdateSetting(FormView):
     template_name = 'stagesetting/update.html'
     success_url = reverse_lazy('stagesetting_list')
-    admin = False
+    admin = None
 
     def get_context_data(self, **kwargs):
         ctx = super(UpdateSetting, self).get_context_data(**kwargs)
@@ -94,20 +95,30 @@ class UpdateSetting(FormView):
             title=string_concat(_("Change "), self.object.key),
             original=self.object,
         )
+        if self.admin:
+            ctx.update(
+                media=self.admin.media + ctx['form'].media,
+            )
         return ctx
 
     def get_form_class(self):
         try:
-            return registry[self.object.key]
+            form = registry[self.object.key]
         except KeyError as e:
             msg = 'form_class missing for setting "%(key)s"' % {
                 'key': self.object.key
             }
             logger.error(msg, exc_info=1)
             raise Http404(msg)
+        if self.admin:
+            cls_name = force_bytes('AdminFields%s' % form.__name__)
+            parents = (AdminFieldForm, form)
+            replaced_form = type(form)(cls_name, parents, {})
+            return replaced_form
+        return form
 
     def get_initial(self):
-        return self.object.raw_value
+        return self.object.value
 
     def assert_has_permission(self, request, obj=None):
         return request_passes_test(request=request, obj=obj)
@@ -125,10 +136,18 @@ class UpdateSetting(FormView):
         self.assert_has_permission(request=request, obj=self.object)
         return super(UpdateSetting, self).post(request, *args, **kwargs)
 
+    def keys_changed(self, old, new):
+        keys = []
+        for key in old:
+            if key in new and old[key] != new[key]:
+                keys.append({'key': key, 'old': old[key], 'new': new[key]})
+        return keys
+
     def form_valid(self, form):
         with transaction.atomic():
-            old_value = self.object.raw_value
-            self.object.raw_value = form.cleaned_data
+            old_value = self.object.value
+            changed_data = self.keys_changed(old_value, form.cleaned_data)
+            self.object.raw_value = registry.serialize(data=form.cleaned_data)
             self.object.full_clean()
             self.object.save()
             LogEntry.objects.log_action(
@@ -137,10 +156,16 @@ class UpdateSetting(FormView):
                 object_id=self.object.pk,
                 object_repr=force_text(self.object),
                 action_flag=CHANGE,
-                change_message="Changed %(old)r to %(new)r" % {
-                    'old': old_value, 'new': self.object,
+                change_message="Changed %(changed)s" % {
+                    'old': force_text(old_value),
+                    'new': force_text(self.object.raw_value),
+                    'changed': force_text(registry.serialize(changed_data))
                 }
             )
+        msg_dict = {'name': force_text(self.object._meta.verbose_name),
+                    'obj': force_text(self.object.key)}
+        msg =  _('The %(name)s "%(obj)s" was changed successfully.') % msg_dict
+        messages.success(self.request, msg)
         return super(UpdateSetting, self).form_valid(form=form)
 
 

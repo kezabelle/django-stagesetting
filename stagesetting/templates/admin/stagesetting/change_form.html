@@ -21,8 +21,6 @@
 </fieldset>
 {% endblock %}
 
-{% block object-tools %}{% endblock %}
-
 {% if save_on_top %}
 {% block submit_buttons_top %}
 {% include "admin/submit_line.html" with show_delete_link=has_delete_permission show_save=True show_save_and_continue=False opts=opts original=original only  %}

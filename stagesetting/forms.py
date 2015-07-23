@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from django.contrib.sites.models import Site
+from django.forms import fields
+from django.contrib.admin import widgets
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
 from django.db.models import BLANK_CHOICE_DASH
@@ -11,6 +12,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from .models import RuntimeSetting
 from stagesetting.utils import registry
+import warnings
 
 
 class CreateSettingForm(Form):
@@ -43,3 +45,33 @@ class CreateSettingForm(Form):
         obj.full_clean()
         obj.save()
         return obj
+
+
+
+ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS = {
+    fields.DateTimeField: {
+    #     'form_class': fields.SplitDateTimeField,
+        'widget': widgets.AdminSplitDateTime
+    },
+    # fields.SplitDateTimeField: {'widget': widgets.AdminSplitDateTime},
+    fields.DateField: {'widget': widgets.AdminDateWidget},
+    fields.URLField: {'widget': widgets.AdminURLFieldWidget},
+    fields.IntegerField: {'widget': widgets.AdminIntegerFieldWidget},
+    fields.CharField: {'widget': widgets.AdminTextInputWidget},
+    fields.ImageField: {'widget': widgets.AdminFileWidget},
+    fields.FileField: {'widget': widgets.AdminFileWidget},
+    fields.EmailField: {'widget': widgets.AdminEmailInputWidget},
+}
+
+
+class AdminFieldForm(object):
+    def __init__(self, *args, **kwargs):
+        super(AdminFieldForm, self).__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if field.__class__ in ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS:
+                custom = ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS[field.__class__]
+                old_attrs = field.widget.attrs.copy()
+                field.widget = custom['widget'](attrs=old_attrs)
+            if field.__class__ == fields.SplitDateTimeField:
+                warnings.warn("Don't use SplitDateTimeField it's a multiwidget "
+                              "and they're kind of a pain to split.", RuntimeWarning)

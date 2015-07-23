@@ -2,12 +2,30 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from collections import namedtuple
+from datetime import datetime
 import json
 from threading import RLock
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
 from .validators import validate_setting_name
 from .validators import validate_formish
+try:
+    from rest_framework.utils.encoders import JSONEncoder as JSONSuperclass
+except ImportError:
+    from django.core.serializers.json import DjangoJSONEncoder as JSONSuperclass
+
+class JSONEncoder(JSONSuperclass):
+    def default(self, o):
+        if isinstance(o, datetime):
+            # We don't use `T` as the sep, because Django doesn't include it
+            # in it's DATETIME_INPUT_FORMATS
+            r = o.isoformat(sep=str(' '))
+            if o.microsecond:
+                r = r[:23] + r[26:]
+            if r.endswith('+00:00'):
+                r = r[:-6] + 'Z'
+            return r
+        return super(JSONEncoder, self).default(o)
 
 
 class RegistryError(KeyError):
@@ -88,7 +106,12 @@ class FormRegistry(object):
         return self._defaults[key]
 
     def get_default(self, key):
-        return json.dumps(self._get_default(key=key))
+        return self.serialize(self._get_default(key=key))
 
+    def serialize(self, data):
+        return json.dumps(data, cls=JSONEncoder)
+
+    def deserialize(self, data):
+        return json.loads(data)
 
 registry = FormRegistry(name='default')
