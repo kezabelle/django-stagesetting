@@ -146,9 +146,6 @@ class RuntimeSettingWrapper(object):
         self._fetch_settings()
         return self.settings.__iter__()
 
-    def __eq__(self, other):
-        return other.settings == self.settings
-
     def __setattr__(self, key, value):
         raise NotImplementedError
 

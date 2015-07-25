@@ -7,7 +7,7 @@ import json
 from threading import RLock
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
-from .validators import validate_setting_name
+from .validators import validate_setting_name, validate_default
 from .validators import validate_formish
 try:
     from rest_framework.utils.encoders import JSONEncoder as JSONSuperclass
@@ -67,6 +67,7 @@ class FormRegistry(object):
     def register(self, key, form_class, default=None):
         validate_setting_name(key)
         validate_formish(form_class)
+        validate_default(default)
         with self._lock:
             if key in self._registry:
                 raise AlreadyRegistered('The setting "%s" is already registered' % key)
