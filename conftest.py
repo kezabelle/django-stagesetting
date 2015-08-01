@@ -23,6 +23,7 @@ def pytest_configure():
                 'django.contrib.sitemaps',
                 'django.contrib.auth',
                 'django.contrib.admin',
+                'django.contrib.sessions',
                 'django.contrib.contenttypes',
                 'django.contrib.messages',
                 'stagesetting',

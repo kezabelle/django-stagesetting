@@ -84,6 +84,7 @@ class UpdateSetting(FormView):
         ctx = super(UpdateSetting, self).get_context_data(**kwargs)
         ctx.update(
             opts=RuntimeSetting._meta,
+            add=False,
             change=True,
             is_popup=(IS_POPUP_VAR in self.request.POST or
                       IS_POPUP_VAR in self.request.GET),

@@ -42,7 +42,8 @@ class RuntimeSetting(Model):
         return registry[self.key]
 
     def get_form(self):
-        return self.get_form_class()(data=json.loads(self.raw_value), files=None)
+        data = registry.deserialize(self.raw_value)
+        return self.get_form_class()(data=data, initial=data, files=None)
 
     @property
     def value(self):
@@ -86,8 +87,8 @@ class RuntimeSetting(Model):
 class RuntimeSettingWrapper(object):
     __slots__ = ('settings', '_lock')
     def __init__(self, settings=None):
-        self.settings = settings
-        self._lock = RLock()
+        super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
+        super(RuntimeSettingWrapper, self).__setattr__('_lock', RLock())
 
     def __str__(self):
         msg_dict = {'cls': self.__class__.__name__}
@@ -112,18 +113,22 @@ class RuntimeSettingWrapper(object):
     def _fetch_settings(self):
         if self.settings is not None:
             return False
+
         with self._lock:
-            self.settings = {}
+            settings = {}
             # Set up defaults which are registered.
             for default_key, default_value in registry._defaults.items():
-                self.settings[default_key] = default_value
+                settings[default_key] = default_value
 
             # Set up anything that's been configured into the database.
-            for setting in RuntimeSetting.objects.all().iterator():
+            keys = frozenset(registry._registry.keys())
+            for setting in RuntimeSetting.objects.filter(key__in=keys).iterator():  # noqa
                 try:
-                    self.settings[setting.key] = setting.value
+                    settings[setting.key] = setting.value
                 except ValidationError:
                     continue
+
+            super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
         return True
 
     def __getitem__(self, item):
@@ -157,9 +162,3 @@ class RuntimeSettingWrapper(object):
 
     def __delitem__(self, item):
         raise NotImplementedError
-
-    def __enter__(self):
-        return self.__class__(settings=self.settings)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return True

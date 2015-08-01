@@ -7,5 +7,5 @@ from stagesetting import urls as stagesetting_urls
 
 urlpatterns = [
    url(r'^', include(stagesetting_urls)),
-   url(r'^admin/', include(admin.site.urls)),
+   url(r'^test_admin/', include(admin.site.urls)),
 ]

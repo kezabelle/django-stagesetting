@@ -5,7 +5,7 @@ import contextlib
 import json
 from django.forms import IntegerField, Form
 import pytest
-from stagesetting.models import RuntimeSetting
+from stagesetting.models import RuntimeSetting, RuntimeSettingWrapper
 from stagesetting.utils import registry
 
 
@@ -80,4 +80,29 @@ def test_delete_restores_default():
 
 @pytest.mark.django_db
 def test_runtimesettingswrapper():
-    assert 1 == 2
+    test_value = {'testing': 1, 'count': 2}
+    test2_value = {'testing': 1, 'count': 4}
+    RuntimeSetting.objects.create(key="TEST", raw_value=json.dumps(test_value))
+    RuntimeSetting.objects.create(key="TEST2", raw_value=json.dumps(test2_value))
+
+    class ListPerPageForm(Form):
+        count = IntegerField(initial=25, min_value=1, max_value=99)
+
+    registry.register('TEST', ListPerPageForm, {'count': '3'})
+    registry.register('TEST_DEFAULT', ListPerPageForm, {'count': '14'})
+
+    wrapped = RuntimeSettingWrapper()
+    assert wrapped['TEST'] == {'count': 2}
+    assert wrapped['TEST_DEFAULT'] == {'count': '14'}
+
+    # new values won't be discovered until the existing data is updated
+    RuntimeSetting.objects.create(key="TEST_DEFAULT",
+                                  raw_value=json.dumps(test2_value))
+    assert wrapped['TEST_DEFAULT'] == {'count': '14'}
+    wrapped2 = RuntimeSettingWrapper()
+    assert wrapped2['TEST_DEFAULT'] == {'count': 4}
+    assert bool(wrapped) is True
+    assert 'TEST' in wrapped
+    assert wrapped.TEST == {'count': 2}
+    data = tuple(x for x in wrapped)
+    assert data == ('TEST', 'TEST_DEFAULT')

@@ -2,6 +2,7 @@
 source = stagesetting
 omit =
     stagesetting/test_*
+    stagesetting/migrations/*
 branch = True
 data_file = .coverage
 timid = False
@@ -14,6 +15,7 @@ precision = 0
 show_missing = True
 omit =
     stagesetting/test_*
+    stagesetting/migrations/*
 
 [xml]
 output = coverage.xml
