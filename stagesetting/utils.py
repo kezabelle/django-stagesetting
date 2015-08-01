@@ -7,7 +7,7 @@ import json
 from threading import RLock
 from uuid import UUID
 from django.conf import settings
-from django.db.transaction import atomic
+from django.db.models import QuerySet, Model
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.module_loading import import_string
@@ -34,7 +34,12 @@ class JSONEncoder(DjangoJSONEncoder):
             return force_text(o.total_seconds())
         elif isinstance(o, UUID):
             return force_text(o)
-        return super(JSONEncoder, self).default(o)
+        elif isinstance(o, QuerySet):  # MultipleModelChoice
+            return tuple(force_text(x.pk) for x in o)
+        elif isinstance(o, Model):  # ModelChoice
+            return force_text(o.pk)
+        else:
+            return super(JSONEncoder, self).default(o)  # pragma: no cover
 
 
 class RegistryError(KeyError):

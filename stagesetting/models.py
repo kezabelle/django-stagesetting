@@ -45,11 +45,15 @@ class RuntimeSetting(Model):
         data = registry.deserialize(self.raw_value)
         return self.get_form_class()(data=data, initial=data, files=None)
 
-    @property
-    def value(self):
+    def get_value(self):
         form = self.get_form()
         form.full_clean()
         return form.cleaned_data
+
+    def set_value(self, value):
+        self.raw_value = registry.serialize(value)
+
+    value = property(get_value, set_value)
 
     @property
     def default_value(self):

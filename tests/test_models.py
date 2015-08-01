@@ -3,7 +3,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import contextlib
 import json
-from django.forms import IntegerField, Form
+from django.contrib.auth import get_user_model
+from django.forms import IntegerField, Form, ModelChoiceField, \
+    ModelMultipleChoiceField
 import pytest
 from stagesetting.models import RuntimeSetting, RuntimeSettingWrapper
 from stagesetting.utils import registry
@@ -15,6 +17,17 @@ def form(key):
         count = IntegerField(initial=25, min_value=1, max_value=99)
     registry.register(key, ListPerPageForm, {'amdefault': None})
     yield ListPerPageForm
+    registry.unregister(key)
+
+
+@contextlib.contextmanager
+def userform(key):
+    class ModelChoicesForm(Form):
+        single_user = ModelChoiceField(queryset=get_user_model().objects.all())
+        many_users = ModelMultipleChoiceField(queryset=get_user_model().objects.all())
+        another = IntegerField(min_value=1, max_value=5)
+    registry.register(key, ModelChoicesForm)
+    yield ModelChoicesForm
     registry.unregister(key)
 
 
@@ -106,3 +119,21 @@ def test_runtimesettingswrapper():
     assert wrapped.TEST == {'count': 2}
     data = tuple(x for x in wrapped)
     assert data == ('TEST', 'TEST_DEFAULT')
+
+
+@pytest.mark.django_db
+def test_can_serialize_modelchoices():
+    user1 = get_user_model().objects.create(username='woo')
+    user2 = get_user_model().objects.create(username='woo2')
+    with userform('USERFORM') as form_class:
+        form_ = form_class(data={'single_user': user1.pk,
+                                 'many_users': [user1.pk, user2.pk],
+                                 'another': 3})
+        form_.is_valid()
+
+        value = RuntimeSetting(key="USERFORM")
+        value.value = form_.cleaned_data
+        assert '"single_user": "1"' in value.raw_value
+        assert '"many_users": ["1", "2"]' in value.raw_value
+        assert value.value['single_user'] == user1
+        assert set(value.value['many_users']) == set([user1, user2])
