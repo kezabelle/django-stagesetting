@@ -1,0 +1,7 @@
+include *.py
+include .coveragerc
+include CHANGELOG
+include LICENSE
+include Makefile
+include tox.ini
+recursive-include stagesetting *.html
