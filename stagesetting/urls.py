@@ -2,12 +2,13 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.conf.urls import url
+from .views import create_view
 from .views import update_view
 from .views import delete_view
 from .views import list_view
 
 stagesetting_create = url(regex=r'^add/$',
-                     view=update_view,
+                     view=create_view,
                      name='stagesetting_create',
                      kwargs={})
 

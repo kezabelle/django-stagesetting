@@ -1,0 +1,15 @@
+{% extends "stagesetting/base.html" %}
+{% block content %}
+    <form action="{% url 'stagesetting_create' %}" method="get" accept-charset="utf-8">
+        <input type="submit" value="Create new">
+    </form>
+    <ul>
+    {% for obj in object_list %}
+        <li><a href="{% url 'stagesetting_update' obj.pk %}">{{ obj.key }}</a>
+            <form action="{% url 'stagesetting_delete' obj.pk %}" method="get" accept-charset="utf-8">
+                <input type="submit" value="Delete">
+            </form>
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
