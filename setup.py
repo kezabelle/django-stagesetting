@@ -43,7 +43,7 @@ LONG_DESCRIPTION = "\r\n\r\n----\r\n\r\n".join(make_readme(HERE))
 setup(
     name='django-stagesetting',
     version='0.1.0',
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests', 'test_app']),
     install_requires=(
         'Django>=1.7',
     ),
@@ -59,7 +59,7 @@ setup(
     author_email='python-package@kerynknight.com',
     description="Runtime settings and configuration for Django sites",
     long_description=LONG_DESCRIPTION,
-    keywords=['settings',],
+    keywords=['settings', 'django', 'live', 'dynamic'],
     include_package_data=True,
     url='https://github.com/kezabelle/django-stagesetting',
     download_url='https://github.com/kezabelle/django-stagesetting/releases',
@@ -78,8 +78,6 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Framework :: Django',
-        'Framework :: Django :: 1.5',
-        'Framework :: Django :: 1.6',
         'Framework :: Django :: 1.7',
         'Framework :: Django :: 1.8',
     ],
