@@ -1,4 +1,4 @@
-django-stagesetting 0.1.0
+django-stagesetting 0.2.0
 =========================
 
 An application for managing site configuration through normal `Django`_ forms,

@@ -42,7 +42,7 @@ LONG_DESCRIPTION = "\r\n\r\n----\r\n\r\n".join(make_readme(HERE))
 
 setup(
     name='django-stagesetting',
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(exclude=['tests', 'test_app']),
     install_requires=(
         'Django>=1.7',
