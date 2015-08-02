@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from datetime import datetime, date, time
 import os
 import sys
 from django.conf import settings
@@ -11,6 +12,15 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'TESTTESTTESTTESTTESTTESTTESTTEST')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,testserver').split(',')
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.abspath(__file__)))
+
+def user():
+    from django.contrib.auth import get_user_model
+    return get_user_model()()
+
+def user_qs():
+    from django.contrib.auth import get_user_model
+    return get_user_model().objects.all()
+
 settings.configure(
     DEBUG=DEBUG,
     SECRET_KEY=SECRET_KEY,
@@ -58,6 +68,21 @@ settings.configure(
         'DATES': ['test_app.forms.DateForm'],
         'DATETIMES': ['test_app.forms.DatetimeForm'],
         'USERS': ['test_app.forms.ModelChoicesForm'],
+        'GENERATED':  {
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+            'model': user,
+            'queryset': user_qs,
+            'datetime': datetime.today(),
+            'date': date.today(),
+            'time': time(4, 23),
+            'boolean': False,
+            'nullboolean': None,
+            'ip': '127.0.0.1',
+            'slug': 'test-test',
+            'text': 'char field',
+        }
     },
 )
 

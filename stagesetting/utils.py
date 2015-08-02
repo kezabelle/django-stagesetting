@@ -2,15 +2,21 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from collections import namedtuple, OrderedDict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
+from decimal import Decimal
 import json
 from threading import RLock
 from uuid import UUID
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_slug, validate_ipv46_address, \
+    URLValidator, validate_email
 from django.db.models import QuerySet, Model
+from django import forms
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.module_loading import import_string
+from django.utils.six import string_types, integer_types
 from .validators import validate_setting_name, validate_default
 from .validators import validate_formish
 from django.core.serializers.json import DjangoJSONEncoder
@@ -81,16 +87,25 @@ class FormRegistry(object):
         project_setting = getattr(settings, 'STAGESETTINGS', {})
 
         for setting_name, config in project_setting.items():
-            config_length = len(config)
-            if not config_length:
-                continue
-            # assert 1 <= config_length <= 2, \
-            #     "Value should be a 1 or 2 length iterable"
-            importable = config[0]
             default = None
-            if config_length == 2:
-                default = config[1]
-            form = import_string(importable)
+            # if the only parameter is a dictionary, make it a form.
+            try:
+                validate_default(config)
+                form = generate_form(config)
+            except ValidationError:
+                # if the first parameter is a dictionary, generate a form
+                try:
+                    validate_default(config[0])
+                    form = generate_form(config[0])
+                    default = config[0]
+                # if it's not a dictionary, it's a path to a Form class
+                except ValidationError:
+                    form = import_string(config[0])
+                # if a second parameter is given, it is always the defaults.
+                try:
+                    default = config[1]
+                except IndexError:
+                    pass
             self.register(key=setting_name, form_class=form, default=default)
 
         db_for_rw = model.objects.using(self._name)
@@ -157,3 +172,74 @@ class FormRegistry(object):
         return json.loads(data)
 
 registry = FormRegistry(name='default')
+
+
+def _select_field(v):
+    if v is None:
+        return forms.NullBooleanField(initial=v)
+    elif isinstance(v, datetime):
+        return forms.DateTimeField(initial=v)
+    elif isinstance(v, date):
+        return forms.DateField(initial=v)
+    elif isinstance(v, time):
+        return forms.TimeField(initial=v)
+    elif isinstance(v, timedelta):
+        return forms.DurationField(initial=v)
+    elif isinstance(v, Decimal):
+        return forms.DecimalField(initial=v)
+    elif isinstance(v, float):
+        return forms.FloatField(initial=v)
+    elif isinstance(v, bool):
+        return forms.BooleanField(initial=v, required=False)
+    elif isinstance(v, integer_types):
+        return forms.IntegerField(initial=v)
+    elif isinstance(v, UUID):
+        return forms.UUIDField(initial=v)
+    elif isinstance(v, (list, tuple)):
+        return forms.ChoiceField(choices=v)
+    elif isinstance(v, Model):
+        kws = {'queryset': v.__class__.objects.all()}
+        if hasattr(v, 'pk') and v.pk is not None:
+            kws.update(initial=v.pk)
+        return forms.ModelChoiceField(**kws)
+    elif isinstance(v, QuerySet):
+        return forms.ModelMultipleChoiceField(queryset=v)
+    elif isinstance(v, string_types):
+        try:
+            validate_ipv46_address(v)
+            return forms.GenericIPAddressField(initial=v)
+        except ValidationError:
+            pass
+        try:
+            URLValidator()(v)
+            return forms.URLField(initial=v)
+        except ValidationError:
+            pass
+        try:
+            validate_email(v)
+            return forms.EmailField(initial=v)
+        except ValidationError:
+            pass
+        try:
+            validate_slug(v)
+            return forms.SlugField(initial=v)
+        except ValidationError:
+            pass
+        return forms.CharField(initial=v)
+
+
+def generate_form(dictionary):
+    form_fields = OrderedDict()
+    for k, v in sorted(dictionary.items()):
+        if callable(v):
+            v = v()
+        form_fields[k]= _select_field(v)
+    return type('DictionaryGeneratedForm', (forms.Form,), form_fields)
+
+            
+
+            
+            
+            
+            
+            
