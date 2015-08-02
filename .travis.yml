@@ -8,6 +8,10 @@ notifications:
 install:
   - pip install --upgrade pip setuptools tox
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+
 env:
  - TOX_ENV=py27-django17
  - TOX_ENV=py27-django18
