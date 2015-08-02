@@ -6,6 +6,15 @@ and thus through the `admin site`_.
 
 Yay, I've made another app to abuse `contrib.admin`_.
 
+.. |travis_master| image:: https://travis-ci.org/kezabelle/django-stagesetting.svg?branch=master
+  :target: https://travis-ci.org/kezabelle/django-stagesetting
+
+==============  ======
+Release         Status
+==============  ======
+master          |travis_master|
+==============  ======
+
 Installation
 ------------
 
