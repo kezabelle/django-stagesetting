@@ -18,8 +18,8 @@ def test_custom_json():
     output = json.dumps({
         'uuid': UUID('98967ef2-a5a3-4c19-aefa-9bb8dc5fcbac'),
         'timedelta': timedelta(minutes=14),
-        'datetime': datetime(2015, 8, 01, 16, 8, 51, 125068),
-        'tzdatetime': datetime(2015, 8, 01, 16, 8, 51, 125068).replace(tzinfo=utc),
+        'datetime': datetime(2015, 8, 1, 16, 8, 51, 125068),
+        'tzdatetime': datetime(2015, 8, 1, 16, 8, 51, 125068).replace(tzinfo=utc),
         'super': 1,
     }, cls=JSONEncoder)
     assert '"timedelta": "840.0"' in output
@@ -31,8 +31,8 @@ def test_custom_json():
 def formregistry_ready():
     fr = FormRegistry(name='default')
     newconfig = {
-        'HELLO': ['test_app.apps.DatetimeForm', {'blip': 'blop'}],
-        'HELLO2': ['test_app.apps.ListPerPageForm'],
+        'HELLO': ['test_app.forms.DatetimeForm', {'blip': 'blop'}],
+        'HELLO2': ['test_app.forms.ListPerPageForm'],
     }
     with override_settings(STAGESETTINGS=newconfig):
         return fr.ready(sender=None, instance=None, model=RuntimeSetting)

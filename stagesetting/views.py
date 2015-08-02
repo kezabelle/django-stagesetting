@@ -112,7 +112,7 @@ class UpdateSetting(FormView):
             logger.error(msg, exc_info=1)
             raise Http404(msg)
         if self.admin:
-            cls_name = force_bytes('AdminFields%s' % form.__name__)
+            cls_name = force_text('AdminFields%s' % form.__name__)
             parents = (AdminFieldForm, form)
             replaced_form = type(form)(cls_name, parents, {})
             return replaced_form

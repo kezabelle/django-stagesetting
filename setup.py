@@ -45,8 +45,7 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     install_requires=(
-        'Django>=1.5',
-        'django-jsonfield>=0.9.13',
+        'Django>=1.7',
     ),
     tests_require=(
         'pytest>=2.6.4',
@@ -54,9 +53,6 @@ setup(
         'pytest-django>=2.8.0',
         'pytest-remove-stale-bytecode>=1.0',
         'pytest-random>=0.2',
-        'pytest-sugar>=0.4.0',
-        'pytest-spec>=0.2.24',
-        'pinax-eventlog>=1.0.0',
     ),
     cmdclass={'test': PyTest},
     author='Keryn Knight',
