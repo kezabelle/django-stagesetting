@@ -19,10 +19,23 @@ stable (0.2.0)  |travis_stable|
 master          |travis_master|
 ==============  ======
 
+Pre-requisites
+--------------
+
+The following versions are tested:
+
+* Python 2.7, 3.3, or 3.4
+* `Django`_ 1.7 or 1.8
+
 Installation
 ------------
 
-Add the package to your ``INSTALLED_APPS`` in your settings::
+First up, you need to install it  (via `pip`_ as usual)::
+
+    pip install django-stagesetting==0.2.0
+
+Once that's downloaded, add the package to your ``INSTALLED_APPS``
+in your settings::
 
     INSTALLED_APPS = (
         # ...
