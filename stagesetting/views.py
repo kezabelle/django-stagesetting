@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils.encoding import force_text, force_bytes
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _, string_concat
 from django.views.generic import FormView
 from django.views.generic import ListView
@@ -112,7 +112,7 @@ class UpdateSetting(FormView):
             logger.error(msg, exc_info=1)
             raise Http404(msg)
         if self.admin:
-            cls_name = force_text('AdminFields%s' % form.__name__)
+            cls_name = str('AdminFields%s' % form.__name__)
             parents = (AdminFieldForm, form)
             replaced_form = type(form)(cls_name, parents, {})
             return replaced_form
