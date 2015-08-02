@@ -55,6 +55,7 @@ ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS = {
     },
     # fields.SplitDateTimeField: {'widget': widgets.AdminSplitDateTime},
     fields.DateField: {'widget': widgets.AdminDateWidget},
+    fields.TimeField: {'widget': widgets.AdminTimeWidget},
     fields.URLField: {'widget': widgets.AdminURLFieldWidget},
     fields.IntegerField: {'widget': widgets.AdminIntegerFieldWidget},
     fields.CharField: {'widget': widgets.AdminTextInputWidget},

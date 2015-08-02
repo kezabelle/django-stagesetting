@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.core.exceptions import ValidationError
-from django.forms import Form, IntegerField, DateTimeField, DateField, \
-    SplitDateTimeField
+from django.forms import (Form, IntegerField, DateTimeField, DateField,
+                          ModelChoiceField, ModelMultipleChoiceField)
 from django.utils.translation import ugettext_lazy as _
 from django.apps import AppConfig
 from stagesetting.utils import registry
@@ -44,4 +44,12 @@ class TestAppConfig(AppConfig):
         registry.register('LIST_PER_PAGE', ListPerPageForm)
         registry.register('DATES', DateForm)
         registry.register('DATETIMES', DatetimeForm)
+        from django.contrib.auth import get_user_model
+
+        class ModelChoicesForm(Form):
+            single_user = ModelChoiceField(queryset=get_user_model().objects.all())
+            many_users = ModelMultipleChoiceField(queryset=get_user_model().objects.all())
+            another = IntegerField(min_value=1, max_value=5)
+
+        registry.register('USERS', ModelChoicesForm)
 

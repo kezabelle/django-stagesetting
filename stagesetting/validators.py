@@ -21,7 +21,8 @@ def validate_formish(value):
         assert hasattr(value, 'is_valid')
         assert hasattr(value, 'clean')
     except AssertionError:
-        raise ValidationError("%r doesn't appear to be a Form class" % value)
+        raise ValidationError("%(form)r doesn't appear to be a Form class" % {
+            'form': value})
 
 
 def validate_default(value):

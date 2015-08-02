@@ -82,8 +82,10 @@ class FormRegistry(object):
 
         for setting_name, config in project_setting.items():
             config_length = len(config)
-            assert 1 <= config_length <= 2, \
-                "Value should be a 1 or 2 length iterable"
+            if not config_length:
+                continue
+            # assert 1 <= config_length <= 2, \
+            #     "Value should be a 1 or 2 length iterable"
             importable = config[0]
             default = None
             if config_length == 2:
