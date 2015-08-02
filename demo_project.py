@@ -24,6 +24,7 @@ settings.configure(
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'stagesetting.middleware.ApplyRuntimeSettings',
     ),
     DATABASES={
         'default': {
@@ -34,6 +35,7 @@ settings.configure(
     TEMPLATE_CONTEXT_PROCESSORS=(
         'django.contrib.messages.context_processors.messages',
         'django.contrib.auth.context_processors.auth',
+        'stagesetting.context_processors.runtime_settings',
     ),
     INSTALLED_APPS=(
         'django.contrib.contenttypes',
@@ -51,6 +53,12 @@ settings.configure(
     MESSAGE_STORAGE='django.contrib.messages.storage.cookie.CookieStorage',
     SESSION_ENGINE='django.contrib.sessions.backends.signed_cookies',
     SESSION_COOKIE_HTTPONLY=True,
+    STAGESETTINGS={
+        'LIST_PER_PAGE': ['test_app.forms.ListPerPageForm'],
+        'DATES': ['test_app.forms.DateForm'],
+        'DATETIMES': ['test_app.forms.DatetimeForm'],
+        'USERS': ['test_app.forms.ModelChoicesForm'],
+    },
 )
 
 from django.core.wsgi import get_wsgi_application

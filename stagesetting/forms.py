@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.forms import fields
-from django.contrib.admin import widgets
+from django.contrib.admin import widgets as admin_widgets
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
 from django.db.models import BLANK_CHOICE_DASH
@@ -11,6 +11,7 @@ from django.forms.fields import CharField
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from .models import RuntimeSetting
+from stagesetting import widgets
 from stagesetting.utils import registry
 import warnings
 
@@ -51,17 +52,18 @@ class CreateSettingForm(Form):
 ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS = {
     fields.DateTimeField: {
     #     'form_class': fields.SplitDateTimeField,
-        'widget': widgets.AdminSplitDateTime
+        'widget': admin_widgets.AdminSplitDateTime
     },
-    # fields.SplitDateTimeField: {'widget': widgets.AdminSplitDateTime},
-    fields.DateField: {'widget': widgets.AdminDateWidget},
-    fields.TimeField: {'widget': widgets.AdminTimeWidget},
-    fields.URLField: {'widget': widgets.AdminURLFieldWidget},
-    fields.IntegerField: {'widget': widgets.AdminIntegerFieldWidget},
-    fields.CharField: {'widget': widgets.AdminTextInputWidget},
-    fields.ImageField: {'widget': widgets.AdminFileWidget},
-    fields.FileField: {'widget': widgets.AdminFileWidget},
-    fields.EmailField: {'widget': widgets.AdminEmailInputWidget},
+    # fields.SplitDateTimeField: {'widget': admin_widgets.AdminSplitDateTime},
+    fields.DateField: {'widget': admin_widgets.AdminDateWidget},
+    fields.TimeField: {'widget': admin_widgets.AdminTimeWidget},
+    fields.URLField: {'widget': admin_widgets.AdminURLFieldWidget},
+    fields.IntegerField: {'widget': widgets.AdminIntegerFieldReplacement},
+    fields.CharField: {'widget': admin_widgets.AdminTextInputWidget},
+    fields.ImageField: {'widget': admin_widgets.AdminFileWidget},
+    fields.FileField: {'widget': admin_widgets.AdminFileWidget},
+    fields.EmailField: {'widget': admin_widgets.AdminEmailInputWidget},
+    # ModelMultipleChoiceField: {'widget': partial(widgets.FilteredSelectMultiple, verbose_name='hello', is_stacked=False)}
 }
 
 
