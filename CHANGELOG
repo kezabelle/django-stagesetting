@@ -1,6 +1,12 @@
 Change log
 ----------
 
+?next?
+^^^^^^^
+
+* Added ability to auto-generate forms for configuration values which are
+  dictionaries.
+
 0.2.0
 ^^^^^^
 

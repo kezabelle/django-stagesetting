@@ -63,11 +63,11 @@ provide a ``dictionary`` as the value::
 
     STAGESETTINGS = {
         'MY_SETTING': {
-            'datetime': datetime.today(),
-            'date': date.today(),
-            'time': time(4, 23),
-            'boolean': False,
-            'text': 'char field',
+            'an_example-datetime': datetime.today(),
+            'a_date': date.today(),
+            'time_now': time(4, 23),
+            'boolean_field': False,
+            'plain_text': 'char field',
             'decimal': Decimal('3.25'),
             'float': 2.3,
         }
@@ -113,6 +113,35 @@ database.
 It will get re-converted to proper Python values when pulled out
 of the database, by going through the given `Form`_ class's validation again,
 including converting to rich values like model instances.
+
+
+Python types which can be detected
+**********************************
+
+When detecting a dictionary as the value and auto-generating a form, the
+following translations will be applied:
+
+- ``None`` becomes `NullBooleanField`_
+- ``datetime.datetime`` becomes `DateTimeField`_
+- ``datetime.date`` becomes `DateField`_
+- ``datetime.time`` becomes `TimeField`_
+- ``datetime.timedelta`` becomes `DurationField`_
+- ``decimal.Decimal`` becomes `DecimalField`_
+- ``float`` becomes `FloatField`_
+- ``True`` or ``False`` become `BooleanField`_
+- ``int`` becomes `IntegerField`_
+- ``uuid.UUID`` becomes `UUIDField`_ or `CharField`_, depending on the `Django`_ version
+- ``list`` and ``tuple`` become `MultipleChoiceField`_
+- ``collections.OrderedDict``, ``set``, ``frozenset``, and ``dict`` become `ChoiceField`_
+- ``models.Model`` instances become `ModelChoiceField`_
+- ``models.QuerySet`` becomes `ModelMultipleChoiceField`_
+- strings become one of the following, depending on what checks they pass:
+
+  - `GenericIPAddressField`_
+  - `URLField`_
+  - `EmailField`_
+  - `SlugField`_
+  - `CharField`_
 
 Usage in code
 -------------
@@ -164,3 +193,22 @@ caches them for it's lifetime thereafter.
 .. _JSON: http://json.org/
 .. _pip: https://pip.pypa.io/en/stable/
 .. _pytest: http://pytest.org/latest/
+.. _BooleanField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#booleanfield
+.. _CharField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#charfield
+.. _ChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#choicefield
+.. _DateField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datefield
+.. _DateTimeField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datetimefield
+.. _DecimalField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#decimalfield
+.. _DurationField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#durationfield
+.. _EmailField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#emailfield
+.. _FloatField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#floatfield
+.. _GenericIPAddressField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#genericipaddressfield
+.. _IntegerField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#integerfield
+.. _ModelChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#modelchoicefield
+.. _ModelMultipleChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#modelmultiplechoicefield
+.. _MultipleChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#multiplechoicefield
+.. _NullBooleanField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#nullbooleanfield
+.. _SlugField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#slugfield
+.. _TimeField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#timefield
+.. _URLField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#urlfield
+.. _UUIDField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#uuidfield
