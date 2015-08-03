@@ -103,7 +103,7 @@ def test_generate_form():
         'text': 'char field',
         'decimal': '3.25',
         'float': '2.3',
-        'uuid': str(uuid.hex),
+        'uuid': str(uuid),
         'list': ['a'],
         'set': 'b'
     }
@@ -111,6 +111,7 @@ def test_generate_form():
     valid = form.is_valid()
     assert form.errors == {}
     qs = form.cleaned_data.pop('queryset')
+    uuid_result = form.cleaned_data.pop('uuid')
     assert form.cleaned_data == {
         'url': 'https://news.bbc.co.uk/',
         'text': 'char field',
@@ -124,7 +125,6 @@ def test_generate_form():
         'slug': 'test-test',
         'model': user,
         'int': 1,
-        'uuid': uuid,
         'list': ['a'],
         'time': time(4, 23),
         'set': 'b',

@@ -5,6 +5,7 @@ from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta, date, time
 from decimal import Decimal
 import json
+import logging
 from threading import RLock
 from uuid import UUID
 from django.conf import settings
@@ -20,6 +21,9 @@ from django.utils.six import string_types, integer_types
 from .validators import validate_setting_name, validate_default
 from .validators import validate_formish
 from django.core.serializers.json import DjangoJSONEncoder
+
+
+logger = logging.getLogger(__name__)
 
 
 class JSONEncoder(DjangoJSONEncoder):
@@ -194,7 +198,13 @@ def _select_field(v):
     elif isinstance(v, integer_types):
         return forms.IntegerField(initial=v)
     elif isinstance(v, UUID):
-        return forms.UUIDField(initial=v)
+        try:
+            return forms.UUIDField(initial=v)
+        except AttributeError:
+            logger.error("You're on an older version of Django which doesn't "
+                         "have UUIDField, so a charfield is being used "
+                         "instead", exc_info=1)
+            return forms.CharField(initial=str(v))
     elif isinstance(v, (list, tuple)):
         choices = tuple((k, k) for k in v)
         return forms.MultipleChoiceField(choices=choices)
@@ -245,7 +255,7 @@ def generate_form(dictionary):
         if callable(v):
             v = v()
         form_fields[k]= _select_field(v)
-    return type('DictionaryGeneratedForm', (forms.Form,), form_fields)
+    return type(str('DictionaryGeneratedForm'), (forms.Form,), form_fields)
 
 
 
