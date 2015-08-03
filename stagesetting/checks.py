@@ -6,6 +6,8 @@ from django.core.checks import Warning
 from django.core.checks import Error
 from django.core.exceptions import ValidationError
 from django.utils.six import string_types
+from stagesetting.utils import generate_form
+
 try:
     from django.utils.module_loading import import_string
 except ImportError:  # pragma: no cover
@@ -62,6 +64,64 @@ E007 = partial(Error,
 )
 
 
+def validate_as_dict(key, value):
+    """
+    Returns `True` if it's a dict we can generate a form for,
+    `False` if it's not, or an Error instance comes out of the form.
+    """
+    try:
+        validate_default(value)
+        form = generate_form(value)
+    except ValidationError:
+        return None
+    try:
+        validate_formish(form)
+        return form
+    except ValidationError:
+        return None  # E007(obj=key)
+
+
+def validate_params_of_list(key, value):
+    """
+    Assumes the `value` is a list ...
+    """
+    errors = []
+    config_length = len(value)
+    # has multiple values
+    if not isinstance(value, (list, tuple)):
+        try:
+            wtf_is_it = type(value).__name__
+        except AttributeError:  # pragma: no cover
+            wtf_is_it = '???'
+        return [E002(obj=key, hint="Got `%s` instead" % wtf_is_it)]
+    if isinstance(value, (list, tuple)) and config_length not in (1, 2):
+        return [E003(obj=key)]
+
+    # first try to make a form
+    first_param_is_dict_form = validate_as_dict(key, value=value[0])
+    if first_param_is_dict_form is None:
+        if not isinstance(value[0], string_types):
+            return [E004(obj=key)]
+        # then try and import a form
+        try:
+            form = import_string(value[0])
+        except (ImportError, AttributeError) as exc:
+            return [E006(obj=key)]
+        # make sure our value feels like a form
+        try:
+            validate_formish(form)
+        except ValidationError:
+            errors.append(E007(obj=key))
+
+    # make sure the second param feels like a dictionary
+    if config_length == 2:
+        try:
+            validate_default(value[1])
+        except ValidationError as exc:
+            errors.append(E005(obj=key))
+    return errors
+
+
 # noinspection PyUnusedLocal
 def check_setting(app_configs, **kwargs):
     from django.conf import settings
@@ -75,36 +135,8 @@ def check_setting(app_configs, **kwargs):
             except ValidationError as exc:
                 errors.append(E001(obj=key))
 
-            config_length = len(value)
-
-            if not isinstance(value, (list, tuple)):
-                try:
-                    wtf_is_it = type(value).__name__
-                except AttributeError:  # pragma: no cover
-                    wtf_is_it = '???'
-                errors.append(E002(obj=key, hint="Got `%s` instead" % wtf_is_it))
-                return errors
-            elif config_length not in (1, 2):
-                errors.append(E003(obj=key))
-                return errors
-
-            if not isinstance(value[0], string_types):
-                errors.append(E004(obj=key))
-                return errors
-
-            try:
-                form = import_string(value[0])
-            except (ImportError, AttributeError) as exc:
-                errors.append(E006(obj=key))  # noqa
-            else:
-                try:
-                    validate_formish(form)
-                except ValidationError as exc:
-                    errors.append(E007(obj=key))  # noqa
-
-            if config_length == 2:
-                try:
-                    validate_default(value[1])
-                except ValidationError as exc:
-                    errors.append(E005(obj=key))
+            only_param_is_dict = validate_as_dict(key, value)
+            if only_param_is_dict is None:
+                list_errors = validate_params_of_list(key, value)
+                errors.extend(list_errors)
     return errors

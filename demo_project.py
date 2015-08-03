@@ -65,7 +65,7 @@ settings.configure(
     SESSION_COOKIE_HTTPONLY=True,
     STAGESETTINGS={
         'LIST_PER_PAGE': ['test_app.forms.ListPerPageForm'],
-        'DATES': ['test_app.forms.DateForm'],
+        'DATES': ['test_app.forms.DateForm', {'start': date.today()}],
         'DATETIMES': ['test_app.forms.DatetimeForm'],
         'USERS': ['test_app.forms.ModelChoicesForm'],
         'GENERATED':  {

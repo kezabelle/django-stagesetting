@@ -254,7 +254,9 @@ def generate_form(dictionary):
     for k, v in sorted(dictionary.items()):
         if callable(v):
             v = v()
-        form_fields[k]= _select_field(v)
+        form_fields[k] = _select_field(v)
+    if len(form_fields) != len(dictionary):
+        raise ValidationError("Could not generate all fields for form")
     return type(str('DictionaryGeneratedForm'), (forms.Form,), form_fields)
 
 

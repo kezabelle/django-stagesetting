@@ -43,25 +43,56 @@ in your settings::
         # ...
     )
 
+do a migrate::
+
+    python manage.py migrate stagesetting
+
 Add a ``STAGESETTINGS`` dictionary to your project's settings::
 
     STAGESETTINGS = {
-        'SETTING_NAME': ['path.to.Form.Class'],
-        'ANOTHER_SETTING_NAME': ['path.to.Form.Class', {
-            'initial': 'data',
-            'is': 'optionl',
-        }],
+        'SETTING_NAME': '...',
+        'ANOTHER_SETTING_NAME': '...',
     }
 
 The setting collection name is the dictionary key, so must be unique.
-The dictionary value should be a list or tuple containing:
 
-  - A string which represents the dotted python path to a `Form`_ class
-  - Optionally, a second value (a dictionary mapping to the `Form`_ data) may be
-    provided, which serves as the default value, and is used when creating items
-    into the database for the first time.
+Writing settings
+^^^^^^^^^^^^^^^^
+Settings may be created in a number of ways, the simplest of which is to
+provide a ``dictionary`` as the value::
 
-A simple configuration form might look like::
+    STAGESETTINGS = {
+        'MY_SETTING': {
+            'datetime': datetime.today(),
+            'date': date.today(),
+            'time': time(4, 23),
+            'boolean': False,
+            'text': 'char field',
+            'decimal': Decimal('3.25'),
+            'float': 2.3,
+        }
+    }
+
+where possible, this will auto-generate a Form class for you, choosing sensible
+defaults for the field variants where possible.
+
+The other option is for the value to be a ``list`` or a ``tuple``, where
+the *first item* represents a form (either a ``dictionary`` as above, **OR**
+the ``dotted.path.to.a.Form.Class`` if you need custom validation) and the
+*second, optional item* is the default data. The following should all be valid::
+
+    STAGESETTINGS = {
+        'AUTO_GENERATED': [{
+            'datetime': datetime.today(),
+        }],
+        'IMPORT_A_FORM': ['myapp.forms.MyForm'],
+        'IMPORT_WITH_DEFAULT': ['myapp.forms.MyForm', {'default': 'data'}],
+        'AUTO_GENERATED_WITH_OTHER_DEFAULTS': [{
+            'datetime': datetime.today(),
+        }, {'default': 'data'}],
+    }
+
+A simple configuration form (for the ``dotted.path.Format``) might look like::
 
     from django.core.exceptions import ValidationError
     from django.forms import Form, DateField

@@ -24,7 +24,7 @@ def test_invalid_setting_name():
 
 def test_invalid_value_type():
     settings = {
-        'INVALID_TYPE': {},
+        'INVALID_TYPE': set(),
     }
     with override_settings(STAGESETTINGS=settings):
         result = check_setting(app_configs=None)
@@ -71,7 +71,6 @@ def test_invalid_form_object_for_value_argument_one():
         assert result[0].id == E007().id
 
 
-
 def test_invalid_datatype_for_value_argument_two_defauls():
     settings = {
         'NOT_A_STRING': ['django.VERSION', set()],
@@ -80,3 +79,57 @@ def test_invalid_datatype_for_value_argument_two_defauls():
         result = check_setting(app_configs=None)
         assert len(result) == 2
         assert result[1].id == E005().id
+
+
+def test_dictionary_value():
+    settings = {
+        'NOT_A_STRING': {
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        },
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert result == []
+
+
+def test_list_dictionary_first_value():
+    settings = {
+        'NOT_A_STRING': [{
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        }],
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert result == []
+
+
+def test_list_dictionary_first_value_second_value():
+    settings = {
+        'NOT_A_STRING': [{
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        }, {
+            'int': 3
+        }],
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert result == []
+
+
+def test_list_dictionary_first_value_second_value_is_list():
+    settings = {
+        'NOT_A_STRING': [{
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        }, []],
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert result[0].id == E005().id
