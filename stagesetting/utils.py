@@ -196,7 +196,17 @@ def _select_field(v):
     elif isinstance(v, UUID):
         return forms.UUIDField(initial=v)
     elif isinstance(v, (list, tuple)):
-        return forms.ChoiceField(choices=v)
+        choices = tuple((k, k) for k in v)
+        return forms.MultipleChoiceField(choices=choices)
+    elif isinstance(v, OrderedDict):
+        choices = tuple((k, subv) for k, subv in v.items())
+        return forms.ChoiceField(choices=choices)
+    elif isinstance(v, dict):
+        choices = sorted((k, subv) for k, subv in v.items())
+        return forms.ChoiceField(choices=choices)
+    elif isinstance(v, (set, frozenset)):
+        choices = tuple((k, k) for k in v)
+        return forms.ChoiceField(choices=choices)
     elif isinstance(v, Model):
         kws = {'queryset': v.__class__.objects.all()}
         if hasattr(v, 'pk') and v.pk is not None:
@@ -220,11 +230,12 @@ def _select_field(v):
             return forms.EmailField(initial=v)
         except ValidationError:
             pass
-        try:
-            validate_slug(v)
-            return forms.SlugField(initial=v)
-        except ValidationError:
-            pass
+        if ' ' not in v and '-' in v:
+            try:
+                validate_slug(v)
+                return forms.SlugField(initial=v)
+            except ValidationError:
+                pass
         return forms.CharField(initial=v)
 
 
@@ -236,10 +247,10 @@ def generate_form(dictionary):
         form_fields[k]= _select_field(v)
     return type('DictionaryGeneratedForm', (forms.Form,), form_fields)
 
-            
 
-            
-            
-            
-            
-            
+
+
+
+
+
+
