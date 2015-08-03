@@ -1,7 +1,6 @@
 Change log
 ----------
-
-?next?
+0.3.0
 ^^^^^^^
 
 * Added ability to auto-generate forms for configuration values which are
