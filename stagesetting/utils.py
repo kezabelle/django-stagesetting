@@ -96,6 +96,7 @@ class FormRegistry(object):
             try:
                 validate_default(config)
                 form = generate_form(config)
+                default = config
             except ValidationError:
                 # if the first parameter is a dictionary, generate a form
                 try:
@@ -105,11 +106,11 @@ class FormRegistry(object):
                 # if it's not a dictionary, it's a path to a Form class
                 except ValidationError:
                     form = import_string(config[0])
-                # if a second parameter is given, it is always the defaults.
-                try:
-                    default = config[1]
-                except IndexError:
-                    pass
+            # if a second parameter is given, it is always the defaults.
+            try:
+                default = config[1]
+            except IndexError:
+                pass
             self.register(key=setting_name, form_class=form, default=default)
 
         db_for_rw = model.objects.using(self._name)
