@@ -60,6 +60,17 @@ def test_formregistry_ready_dict():
     with override_settings(STAGESETTINGS=newconfig):
         with patch_logger('stagesetting.utils', 'info') as logger_calls:
             result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
+        implicit = RuntimeSetting.objects.get(key='HELLO2')
+        assert fr.deserialize(implicit.raw_value) == {
+            'email': 'a@b.com',
+            'int': 1,
+            'url': 'https://news.bbc.co.uk/'
+        }
+        assert fr._get_default(key='HELLO2') == {
+            "email": "a@b.com",
+            "int": 1,
+            "url": "https://news.bbc.co.uk/"
+        }
     assert len(result) == 2
     assert logger_calls == ['HELLO2 config is a dictionary, assuming it '
                             'represents both the form and default values']
@@ -82,6 +93,17 @@ def test_formregistry_ready_dict_with_different_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
+        implicit = RuntimeSetting.objects.get(key='HELLO2')
+        assert fr.deserialize(implicit.raw_value) == {
+            'email': 'a@b.com',
+            'int': 3,
+            'url': 'https://www.bbc.com/'
+        }
+        assert fr._get_default(key='HELLO2') == {
+            "email": "a@b.com",
+            "int": 3,
+            "url": "https://www.bbc.com/"
+        }
     assert len(result) == 2
 
 
