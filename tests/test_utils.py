@@ -9,7 +9,7 @@ from datetime import timedelta, datetime, date, time
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
+from django.test.utils import override_settings, patch_logger
 from django.utils.timezone import utc
 import pytest
 from stagesetting.models import RuntimeSetting
@@ -43,6 +43,45 @@ def formregistry_ready():
 @pytest.mark.django_db
 def test_formregistry_ready():
     result = formregistry_ready()
+    assert len(result) == 2
+
+
+@pytest.mark.django_db
+def test_formregistry_ready_dict():
+    fr = FormRegistry(name='default')
+    newconfig = {
+        'HELLO': ['test_app.forms.DatetimeForm', {'blip': 'blop'}],
+        'HELLO2': {
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        },
+    }
+    with override_settings(STAGESETTINGS=newconfig):
+        with patch_logger('stagesetting.utils', 'info') as logger_calls:
+            result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
+    assert len(result) == 2
+    assert logger_calls == ['HELLO2 config is a dictionary, assuming it '
+                            'represents both the form and default values']
+
+
+@pytest.mark.django_db
+def test_formregistry_ready_dict_with_different_defaults():
+    fr = FormRegistry(name='default')
+    newconfig = {
+        'HELLO': ['test_app.forms.DatetimeForm', {'blip': 'blop'}],
+        'HELLO2': [{
+            'int': 1,
+            'email': 'a@b.com',
+            'url': 'https://news.bbc.co.uk/',
+        }, {
+            'int': 3,
+            'email': 'a@b.com',
+            'url': 'https://www.bbc.com/',
+        }],
+    }
+    with override_settings(STAGESETTINGS=newconfig):
+        result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
     assert len(result) == 2
 
 

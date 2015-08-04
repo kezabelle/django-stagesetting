@@ -110,7 +110,11 @@ class FormRegistry(object):
             try:
                 default = config[1]
             except IndexError:
-                pass
+                logger.info("No default found in the second parameter "
+                            "for %s" % setting_name)
+            except KeyError:
+                logger.info("%s config is a dictionary, assuming it represents "
+                            "both the form and default values" % setting_name)
             self.register(key=setting_name, form_class=form, default=default)
 
         db_for_rw = model.objects.using(self._name)

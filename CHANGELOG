@@ -1,5 +1,12 @@
 Change log
 ----------
+
+?next?
+^^^^^^
+
+* Fixed error introduced in ``0.3.1`` when only providing a dictionary, because
+  it turns out it wasn't being covered by tests.
+
 0.3.1
 ^^^^^^
 
