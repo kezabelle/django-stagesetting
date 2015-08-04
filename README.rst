@@ -1,4 +1,4 @@
-django-stagesetting 0.3.0
+django-stagesetting 0.3.1
 =========================
 
 An application for managing site configuration through normal `Django`_ forms,
@@ -6,7 +6,7 @@ and thus through the `admin site`_.
 
 Yay, I've made another app to abuse `contrib.admin`_.
 
-.. |travis_stable| image:: https://travis-ci.org/kezabelle/django-stagesetting.svg?branch=0.3.0
+.. |travis_stable| image:: https://travis-ci.org/kezabelle/django-stagesetting.svg?branch=0.3.1
   :target: https://travis-ci.org/kezabelle/django-stagesetting
 
 .. |travis_master| image:: https://travis-ci.org/kezabelle/django-stagesetting.svg?branch=master
@@ -15,7 +15,7 @@ Yay, I've made another app to abuse `contrib.admin`_.
 ==============  ======
 Release         Status
 ==============  ======
-stable (0.3.0)  |travis_stable|
+stable (0.3.1)  |travis_stable|
 master          |travis_master|
 ==============  ======
 
@@ -32,7 +32,7 @@ Installation
 
 First up, you need to install it  (via `pip`_ as usual)::
 
-    pip install django-stagesetting==0.3.0
+    pip install django-stagesetting==0.3.1
 
 Once that's downloaded, add the package to your ``INSTALLED_APPS``
 in your settings::
