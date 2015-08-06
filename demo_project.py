@@ -2,10 +2,35 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 from datetime import datetime, date, time
 import os
 import sys
-from django.conf import settings
+sys.dont_write_bytecode = True
+MISSING_DEPENDENCY = False
+try:
+    from django.conf import settings
+except ImportError:
+    sys.stdout.write("You'll need to `pip install Django>=1.7` to run "
+                     "this demo\n")
+    MISSING_DEPENDENCY = True
+
+try:
+    import debug_toolbar
+except ImportError:
+    sys.stdout.write("You'll need to `pip install django-debug-toolbar` to "
+                     "run this demo\n")
+    MISSING_DEPENDENCY = True
+try:
+    import rest_framework
+except ImportError:
+    sys.stdout.write("You'll need to `pip install djangorestframework>=3.2` "
+                     "to run this demo\n")
+    MISSING_DEPENDENCY = True
+
+if MISSING_DEPENDENCY:
+    sys.exit(1)
+
 
 DEBUG = os.environ.get('DEBUG', 'on') == 'on'
 SECRET_KEY = os.environ.get('SECRET_KEY', 'TESTTESTTESTTESTTESTTESTTESTTEST')
@@ -57,6 +82,8 @@ settings.configure(
         'stagesetting',
         'test_app',
         'debug_toolbar',
+        'rest_framework',
+        # 'rest_framework_swagger',
     ),
     STATIC_ROOT=os.path.join(BASE_DIR, 'test_collectstatic'),
     STATIC_URL='/__static__/',
