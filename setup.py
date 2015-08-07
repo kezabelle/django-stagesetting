@@ -53,6 +53,7 @@ setup(
         'pytest-django>=2.8.0',
         'pytest-remove-stale-bytecode>=1.0',
         'pytest-random>=0.2',
+        'djangorestframework==3.2',
     ),
     cmdclass={'test': PyTest},
     author='Keryn Knight',
