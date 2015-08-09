@@ -55,6 +55,9 @@ setup(
         'pytest-random>=0.2',
         'djangorestframework==3.2',
     ),
+    setup_requires=(
+        "isort>=3.9.6",
+    ),
     cmdclass={'test': PyTest},
     author='Keryn Knight',
     author_email='python-package@kerynknight.com',
