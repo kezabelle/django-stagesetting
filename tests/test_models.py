@@ -16,8 +16,10 @@ def form(key):
     class ListPerPageForm(Form):
         count = IntegerField(initial=25, min_value=1, max_value=99)
     registry.register(key, ListPerPageForm, {'amdefault': None})
-    yield ListPerPageForm
-    registry.unregister(key)
+    try:
+        yield ListPerPageForm
+    finally:
+        registry.unregister(key)
 
 
 @contextlib.contextmanager
@@ -27,8 +29,10 @@ def userform(key):
         many_users = ModelMultipleChoiceField(queryset=get_user_model().objects.all())
         another = IntegerField(min_value=1, max_value=5)
     registry.register(key, ModelChoicesForm)
-    yield ModelChoicesForm
-    registry.unregister(key)
+    try:
+        yield ModelChoicesForm
+    finally:
+        registry.unregister(key)
 
 
 
@@ -126,13 +130,11 @@ def test_can_serialize_modelchoices():
     user1 = get_user_model().objects.create(username='woo')
     user2 = get_user_model().objects.create(username='woo2')
     with userform('USERFORM') as form_class:
-        form_ = form_class(data={'single_user': user1.pk,
-                                 'many_users': [user1.pk, user2.pk],
-                                 'another': 3})
-        form_.is_valid()
-
+        data = {'single_user': user1.pk,
+                'many_users': [user1.pk, user2.pk],
+                'another': 3}
         value = RuntimeSetting(key="USERFORM")
-        value.value = form_.cleaned_data
+        value.value = data
         assert '"single_user": "1"' in value.raw_value
         assert '"many_users": ["1", "2"]' in value.raw_value
         assert value.value['single_user'] == user1
