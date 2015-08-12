@@ -266,7 +266,7 @@ def _select_field(v):
         choices = sorted((k, subv) for k, subv in v.items())
         return forms.ChoiceField(choices=choices)
     elif isinstance(v, (set, frozenset)):
-        choices = tuple((k, k) for k in v)
+        choices = sorted((k, k) for k in v)
         return forms.ChoiceField(choices=choices)
     elif isinstance(v, Model):
         kws = {'queryset': v.__class__.objects.all()}
