@@ -11,6 +11,7 @@ from threading import RLock
 from uuid import UUID
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
+from django.core.files.storage import default_storage
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug, validate_ipv46_address, \
@@ -229,6 +230,11 @@ def list_files_in_static():
     return fixed
 
 
+def list_files_in_default_storage():
+    dirs, files = default_storage.listdir('')
+    return sorted((f, f) for f in files)
+
+
 def _select_field(v):
     if v is None:
         return forms.NullBooleanField(initial=v)
@@ -299,6 +305,8 @@ def _select_field(v):
                 pass
         if v in (settings.STATIC_URL, settings.STATICFILES_STORAGE):
             return forms.ChoiceField(choices=list_files_in_static)
+        if v in (settings.MEDIA_URL, settings.DEFAULT_FILE_STORAGE):
+            return forms.ChoiceField(choices=list_files_in_default_storage)
         return forms.CharField(initial=v)
 
 

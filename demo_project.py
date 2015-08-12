@@ -86,7 +86,9 @@ settings.configure(
         # 'rest_framework_swagger',
     ),
     STATIC_ROOT=os.path.join(BASE_DIR, 'test_collectstatic'),
+    MEDIA_ROOT=os.path.join(BASE_DIR, 'test_app'),
     STATIC_URL='/__static__/',
+    MEDIA_URL='/__media__/',
     MESSAGE_STORAGE='django.contrib.messages.storage.cookie.CookieStorage',
     SESSION_ENGINE='django.contrib.sessions.backends.signed_cookies',
     SESSION_COOKIE_HTTPONLY=True,
@@ -111,6 +113,8 @@ settings.configure(
             'text': 'char field',
             'static_selection': '/__static__/',
             'static_storage': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+            'media_storage': 'django.core.files.storage.FileSystemStorage',
+            'media_root': '/__media__/',
         }
     },
 )
