@@ -109,6 +109,8 @@ settings.configure(
             'ip': '127.0.0.1',
             'slug': 'test-test',
             'text': 'char field',
+            'static_selection': '/__static__/',
+            'static_storage': 'django.contrib.staticfiles.storage.StaticFilesStorage',
         }
     },
 )

@@ -8,6 +8,8 @@ help:
 	@echo "test - run tests quickly with the default Python"
 	@echo "release - package and upload a release"
 	@echo "dist - package"
+	@echo "check - package & run metadata sanity checks"
+	@echo "run - runserver"
 	@echo "install - install the package to the active Python's site-packages"
 
 clean: clean-build clean-pyc clean-test
@@ -47,3 +49,6 @@ check: dist
 
 install: clean
 	python setup.py install
+
+run: clean-pyc
+	python demo_project.py runserver 0.0.0.0:8080

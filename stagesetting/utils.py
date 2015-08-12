@@ -4,11 +4,14 @@ from __future__ import unicode_literals
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta, date, time
 from decimal import Decimal
+from itertools import chain, groupby
 import json
 import logging
 from threading import RLock
 from uuid import UUID
 from django.conf import settings
+from django.contrib.staticfiles.finders import get_finders
+from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug, validate_ipv46_address, \
     URLValidator, validate_email
@@ -183,6 +186,49 @@ class FormRegistry(object):
 registry = FormRegistry(name='default')
 
 
+def list_files_in_static():
+    finders = get_finders()
+    finders_results = (finder.list(ignore_patterns=None) for finder in finders)
+    found_files = chain.from_iterable(finders_results)
+
+    def first_part_of_path(x):
+        """
+        Ensure that items without a directory part are grouped together before
+        being passed to groupby
+        """
+        split_by_path_sep = x.split('/')
+        leftmost = split_by_path_sep[0]
+        if leftmost == x:
+            return _('None')
+        return leftmost
+
+    filenames_only = sorted((filename for filename, storage in found_files),
+                            key=first_part_of_path)
+
+    def tuple_to_choices(groupname, flat_tuple):
+        """
+        Given a tuple of:
+            ('path/subpath/filename',
+             'path/another_path/filename2')
+        Yield something like:
+            (('path/subpath/filename', 'subpath/filename'),
+             ('path/another_path/filename2', 'another_path/filename2'))
+        where `path` got replaced in the display value based on the
+        given `groupname`
+        """
+        return tuple((v, v.replace(groupname, '', 1).lstrip('/'))
+                     for v in flat_tuple)
+
+    groups = groupby(filenames_only, first_part_of_path)
+    evaluated_groups = tuple((groupname, tuple(groupitems))
+                             for groupname, groupitems in groups)
+    fixed = ((groupname, tuple_to_choices(groupname, groupitems))
+             for groupname, groupitems in evaluated_groups
+             if not groupname.startswith('.') and groupitems)
+    # import pdb; pdb.set_trace()
+    return fixed
+
+
 def _select_field(v):
     if v is None:
         return forms.NullBooleanField(initial=v)
@@ -251,6 +297,8 @@ def _select_field(v):
                 return forms.SlugField(initial=v)
             except ValidationError:
                 pass
+        if v in (settings.STATIC_URL, settings.STATICFILES_STORAGE):
+            return forms.ChoiceField(choices=list_files_in_static)
         return forms.CharField(initial=v)
 
 
