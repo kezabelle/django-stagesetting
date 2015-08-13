@@ -111,11 +111,16 @@ settings.configure(
             'ip': '127.0.0.1',
             'slug': 'test-test',
             'text': 'char field',
+        },
+        'SPECIAL_STUFF':  [{
             'static_selection': '/__static__/',
             'static_storage': 'django.contrib.staticfiles.storage.StaticFilesStorage',
             'media_storage': 'django.core.files.storage.FileSystemStorage',
             'media_root': '/__media__/',
-        }
+            'html': '<b>test</b>',
+        }, {
+            'static_selection': 'admin/css/login.css',
+        }]
     },
 )
 

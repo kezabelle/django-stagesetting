@@ -12,6 +12,8 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
 from django.core.files.storage import default_storage
+from django.core.urlresolvers import NoReverseMatch, reverse
+from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug, validate_ipv46_address, \
@@ -248,6 +250,61 @@ def list_files_in_default_storage():
     return sorted((f, f) for f in files)
 
 
+def get_htmlfield(**kwargs):
+
+    def ckeditor_field(**kws):
+        try:
+            reverse('ckeditor_upload')
+        except NoReverseMatch:
+            logging.info("Tried to use `django-ckeditor` without setting up "
+                         "the URLconf requirements.", exc_info=1)
+            return None
+        from ckeditor.fields import RichTextFormField
+        return RichTextFormField(**kws)
+
+    def tinymce_field(**kws):
+        from tinymce.widgets import TinyMCE
+        kws.update(widget=TinyMCE)
+        return forms.CharField(**kws)
+
+    def django_markdown_field(**kws):
+        try:
+            reverse('django_markdown_preview')
+        except NoReverseMatch:
+            logging.info("Tried to use `django_markdown` without setting up "
+                         "the URLconf requirements", exc_info=1)
+            return None
+        from django_markdown.fields import MarkdownFormField
+        return MarkdownFormField(**kws)
+
+    def pagedown_field(**kws):
+        from pagedown.forms import PagedownField
+        return PagedownField(**kws)
+
+    def epiceditor_field(**kws):
+        from epiceditor.widgets import EpicEditorWidget
+        kws.update(widget=EpicEditorWidget)
+        return forms.CharField(**kws)
+
+
+    known = OrderedDict([
+        ('ckeditor', ckeditor_field),
+        ('tinymce', tinymce_field),
+        ('django_markdown', django_markdown_field),
+        # ('pagedown', pagedown_field),  # Depends on South :(
+        ('epiceditor', epiceditor_field),
+    ])
+    for appname, field_function in known.items():
+        if appname not in settings.INSTALLED_APPS:
+            continue
+        field = field_function(**kwargs)
+        if field is None:
+            continue
+        return field
+    return forms.CharField(**kwargs)
+        
+
+
 def _select_field(v):
     if callable(v):
         v = v()
@@ -322,6 +379,9 @@ def _select_field(v):
             return forms.ChoiceField(choices=list_files_in_static)
         if v in (settings.MEDIA_URL, settings.DEFAULT_FILE_STORAGE):
             return forms.ChoiceField(choices=list_files_in_default_storage)
+        # TODO: add filtered staticfiles choices
+        if strip_tags(v) != v:
+            return get_htmlfield(initial=v)
         return forms.CharField(initial=v)
 
 
