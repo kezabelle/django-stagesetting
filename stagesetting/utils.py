@@ -251,6 +251,13 @@ def list_files_in_default_storage():
 
 
 def get_htmlfield(**kwargs):
+    try:
+        from django_bleach.forms import BleachField as HTMLField
+    except ImportError:
+        logger.warning("Using an HTML field without having `django-bleach` "
+                       "installed; you should install it. Falling back to "
+                       "using a CharField")
+        HTMLField = forms.CharField
 
     def ckeditor_field(**kws):
         try:
@@ -259,13 +266,15 @@ def get_htmlfield(**kwargs):
             logging.info("Tried to use `django-ckeditor` without setting up "
                          "the URLconf requirements.", exc_info=1)
             return None
-        from ckeditor.fields import RichTextFormField
-        return RichTextFormField(**kws)
+        # unlike most of the other fields,
+        from ckeditor.widgets import CKEditorWidget
+        kws.update(widget=CKEditorWidget)
+        return HTMLField(**kws)
 
     def tinymce_field(**kws):
         from tinymce.widgets import TinyMCE
         kws.update(widget=TinyMCE)
-        return forms.CharField(**kws)
+        return HTMLField(**kws)
 
     def django_markdown_field(**kws):
         try:
@@ -274,24 +283,25 @@ def get_htmlfield(**kwargs):
             logging.info("Tried to use `django_markdown` without setting up "
                          "the URLconf requirements", exc_info=1)
             return None
-        from django_markdown.fields import MarkdownFormField
-        return MarkdownFormField(**kws)
+        from django_markdown.widgets import MarkdownWidget
+        kws.update(widget=MarkdownWidget)
+        return HTMLField(**kws)
 
     def pagedown_field(**kws):
-        from pagedown.forms import PagedownField
-        return PagedownField(**kws)
+        from pagedown.widgets import PagedownWidget
+        kws.update(widget=PagedownWidget)
+        return HTMLField(**kws)
 
     def epiceditor_field(**kws):
         from epiceditor.widgets import EpicEditorWidget
         kws.update(widget=EpicEditorWidget)
-        return forms.CharField(**kws)
-
+        return HTMLField(**kws)
 
     known = OrderedDict([
         ('ckeditor', ckeditor_field),
         ('tinymce', tinymce_field),
         ('django_markdown', django_markdown_field),
-        # ('pagedown', pagedown_field),  # Depends on South :(
+        ('pagedown', pagedown_field),
         ('epiceditor', epiceditor_field),
     ])
     for appname, field_function in known.items():
