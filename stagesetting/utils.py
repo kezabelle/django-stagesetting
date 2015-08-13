@@ -122,6 +122,10 @@ class FormRegistry(object):
             except KeyError:
                 logger.info("%s config is a dictionary, assuming it represents "
                             "both the form and default values" % setting_name)
+            if first_param_is_dictish and default is not None:
+                duped = config[0].copy()
+                duped.update(default)
+                default = duped
             self.register(key=setting_name, form_class=form, default=default)
 
         db_for_rw = model.objects.using(self._name)
