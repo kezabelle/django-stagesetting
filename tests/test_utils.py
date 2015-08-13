@@ -16,18 +16,24 @@ from stagesetting.models import RuntimeSetting
 from stagesetting.utils import JSONEncoder, FormRegistry, generate_form
 
 
+@pytest.mark.django_db
 def test_custom_json():
+    user = get_user_model().objects.create()
     output = json.dumps({
         'uuid': UUID('98967ef2-a5a3-4c19-aefa-9bb8dc5fcbac'),
         'timedelta': timedelta(minutes=14),
         'datetime': datetime(2015, 8, 1, 16, 8, 51, 125068),
         'tzdatetime': datetime(2015, 8, 1, 16, 8, 51, 125068).replace(tzinfo=utc),
         'super': 1,
+        'user': user,
+        'user_qs': get_user_model().objects.all(),
     }, cls=JSONEncoder)
     assert '"timedelta": "840.0"' in output
     assert '"datetime": "2015-08-01 16:08:51.125068"' in output
     assert '"uuid": "98967ef2-a5a3-4c19-aefa-9bb8dc5fcbac"' in output
     assert '"tzdatetime": "2015-08-01 16:08:51.125068"' in output
+    assert '"user_qs": ["1"]' in output
+    assert '"user": "1"' in output
 
 
 def formregistry_ready():
