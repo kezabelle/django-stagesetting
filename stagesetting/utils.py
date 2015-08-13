@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 class JSONEncoder(DjangoJSONEncoder):
     def default(self, o):
+        if callable(o):
+            o = o()
         if isinstance(o, datetime):
             # We don't use `T` as the sep, because Django doesn't include it
             # in it's DATETIME_INPUT_FORMATS
@@ -124,7 +126,11 @@ class FormRegistry(object):
                             "both the form and default values" % setting_name)
             if first_param_is_dictish and default is not None:
                 duped = config[0].copy()
-                duped.update(default)
+                # don't call .update(), instead only copy in the ones which
+                # existed in the form ...
+                for k, v in default.items():
+                    if k in duped:
+                        duped[k] = v
                 default = duped
             self.register(key=setting_name, form_class=form, default=default)
 
@@ -243,6 +249,8 @@ def list_files_in_default_storage():
 
 
 def _select_field(v):
+    if callable(v):
+        v = v()
     if v is None:
         return forms.NullBooleanField(initial=v)
     elif isinstance(v, datetime):
