@@ -96,6 +96,7 @@ class FormRegistry(object):
 
         for setting_name, config in project_setting.items():
             default = None
+            first_param_is_dictish = False
             # if the only parameter is a dictionary, make it a form.
             try:
                 validate_default(config)
@@ -107,9 +108,11 @@ class FormRegistry(object):
                     validate_default(config[0])
                     form = generate_form(config[0])
                     default = config[0]
+                    first_param_is_dictish = True
                 # if it's not a dictionary, it's a path to a Form class
                 except ValidationError:
                     form = import_string(config[0])
+                    first_param_is_dictish = False
             # if a second parameter is given, it is always the defaults.
             try:
                 default = config[1]
