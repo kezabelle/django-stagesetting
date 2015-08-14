@@ -436,11 +436,13 @@ def test_list_files_in_default_storage():
     # make sure they're the same.
     assert found == found2
     assert found[0][0] == 'None'
-    assert found[2][0] == 'static'
-    assert found[3][0] == 'templates'
-    assert found[2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+    # Using negative indexes because py3k leaves __pycache__ folders behind
+    # which break the numbering on Py2.
+    assert found[-2][0] == 'static'
+    assert found[-1][0] == 'templates'
+    assert found[-2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
-    assert found[3][1] == (('templates/base.html', 'base.html'),)
+    assert found[-1][1] == (('templates/base.html', 'base.html'),)
 
 
 def test_list_files_in_default_storage_partial():
@@ -479,16 +481,18 @@ def test_partial_static_files_choice_field():
 def test_default_storage_files_choice_field():
     field = DefaultStorageFilesChoiceField()
     found = tuple(field.choices)
-    assert found[2][0] == 'static'
-    assert found[3][0] == 'templates'
-    assert found[2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+    assert found[-2][0] == 'static'
+    assert found[-1][0] == 'templates'
+    assert found[-2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
-    assert found[3][1] == (('templates/base.html', 'base.html'),)
+    assert found[-1][1] == (('templates/base.html', 'base.html'),)
 
 
 def test_partial_default_storage_files_choice_field():
     field = PartialDefaultStorageFilesChoiceField(only_matching='\.txt$')
     found = tuple(field.choices)
+    # Using negative indexes because py3k leaves __pycache__ folders behind
+    # which break the numbering on Py2.
     assert found[0][0] == 'static'
     assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
