@@ -24,7 +24,11 @@ import pytest
 from stagesetting.models import RuntimeSetting
 from stagesetting.utils import (JSONEncoder, FormRegistry, generate_form,
                                 list_files_in_static, get_htmlfield,
-                                list_files_in_default_storage)
+                                list_files_in_default_storage,
+                                StaticFilesChoiceField,
+                                PartialStaticFilesChoiceField,
+                                PartialDefaultStorageFilesChoiceField,
+                                DefaultStorageFilesChoiceField)
 
 
 @pytest.mark.django_db
@@ -431,7 +435,6 @@ def test_list_files_in_default_storage():
     found2 = tuple(list_files_in_default_storage())
     # make sure they're the same.
     assert found == found2
-    assert len(found) == 4
     assert found[0][0] == 'None'
     assert found[2][0] == 'static'
     assert found[3][0] == 'templates'
@@ -456,3 +459,36 @@ def test_get_htmlfield():
     assert isinstance(lol, fields.CharField) is True
     assert isinstance(lol, BleachField) is True
     assert lol.initial == 'woo'
+
+
+def test_static_files_choice_field():
+    field = StaticFilesChoiceField()
+    found = field.choices
+    assert found[0][0] == 'admin'
+    assert ('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt') in found[0][1]
+    assert ('admin/css/changelists.css', 'css/changelists.css') in found[0][1]
+
+
+def test_partial_static_files_choice_field():
+    field = PartialStaticFilesChoiceField(only_matching='\.txt$')
+    found = field.choices
+    assert found[0][0] == 'admin'
+    assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
+
+
+def test_default_storage_files_choice_field():
+    field = DefaultStorageFilesChoiceField()
+    found = field.choices
+    assert found[2][0] == 'static'
+    assert found[3][0] == 'templates'
+    assert found[2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+                           ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
+    assert found[3][1] == (('templates/base.html', 'base.html'),)
+
+
+def test_partial_default_storage_files_choice_field():
+    field = PartialDefaultStorageFilesChoiceField(only_matching='\.txt$')
+    found = field.choices
+    assert found[0][0] == 'static'
+    assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+                           ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))

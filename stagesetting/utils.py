@@ -21,8 +21,8 @@ from django.core.urlresolvers import NoReverseMatch, reverse
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_slug, validate_ipv46_address, \
-    URLValidator, validate_email
+from django.core.validators import (validate_ipv46_address, URLValidator,
+                                    validate_email)
 from django.db.models import QuerySet, Model
 from django import forms
 from django.utils.encoding import force_text
@@ -32,6 +32,13 @@ from django.utils.six import string_types, integer_types
 from .validators import validate_setting_name, validate_default
 from .validators import validate_formish
 from django.core.serializers.json import DjangoJSONEncoder
+
+try:
+    forms.fields.CallableChoiceIterator
+    CALLABLE_CHOICES = True
+except AttributeError:
+    # Django 1.7 doesn't have a way of lazily evaluating a set of choices.
+    CALLABLE_CHOICES = False
 
 
 logger = logging.getLogger(__name__)
@@ -267,6 +274,8 @@ class StaticFilesChoiceField(TypedChoiceField):
     def __init__(self, *args, **kwargs):
         if 'choices' not in kwargs:  # pragma: no cover
             kwargs['choices'] = list_files_in_static
+        if CALLABLE_CHOICES is False:
+            kwargs['choices'] = kwargs['choices']()
         kwargs['coerce'] = force_text
         super(StaticFilesChoiceField, self).__init__(*args, **kwargs)
 
@@ -276,7 +285,7 @@ class PartialStaticFilesChoiceField(StaticFilesChoiceField):
         if 'choices' not in kwargs:  # pragma: no cover
             kwargs['choices'] = partial(list_files_in_static,
                                         only_matching=only_matching)
-        super(StaticFilesChoiceField, self).__init__(*args, **kwargs)
+        super(PartialStaticFilesChoiceField, self).__init__(*args, **kwargs)
 
 
 def _get_files_in_default_storage(directory=''):
@@ -305,6 +314,8 @@ class DefaultStorageFilesChoiceField(TypedChoiceField):
     def __init__(self, *args, **kwargs):
         if 'choices' not in kwargs:  # pragma: no cover
             kwargs['choices'] = list_files_in_default_storage
+        if CALLABLE_CHOICES is False:
+            kwargs['choices'] = kwargs['choices']()
         kwargs['coerce'] = force_text
         super(DefaultStorageFilesChoiceField, self).__init__(*args, **kwargs)
 
