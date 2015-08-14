@@ -43,6 +43,8 @@ def pytest_configure():
             SITE_ID=1,
             STATIC_URL='/__s__/',
             STATIC_ROOT=os.path.join(HERE, 'test_collectstatic'),
+            MEDIA_ROOT=os.path.join(HERE, 'test_app'),
+            MEDIA_URL='/__m__/',
             ROOT_URLCONF='test_urls',
             PASSWORD_HASHERS=(
                 'django.contrib.auth.hashers.MD5PasswordHasher',

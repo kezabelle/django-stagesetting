@@ -7,13 +7,24 @@ import json
 from uuid import UUID, uuid4
 from datetime import timedelta, datetime, date, time
 from decimal import Decimal
+from collections import OrderedDict
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.forms import forms
+from django.forms import fields
+from django.utils.functional import empty
+import re
+import django
 from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
 from django.test.utils import override_settings, patch_logger
 from django.utils.timezone import utc
+from django_bleach.forms import BleachField
 import pytest
 from stagesetting.models import RuntimeSetting
-from stagesetting.utils import JSONEncoder, FormRegistry, generate_form
+from stagesetting.utils import (JSONEncoder, FormRegistry, generate_form,
+                                list_files_in_static, get_htmlfield,
+                                list_files_in_default_storage)
 
 
 @pytest.mark.django_db
@@ -285,7 +296,21 @@ def test_generate_form():
         'float': 2.3,
         'uuid': uuid4(),
         'list': ['a', 'b'],
-        'set': {'a', 'b'}
+        'set': {'a', 'b'},
+        'regex': re.compile('test'),
+        'ordereddict_choices': OrderedDict([
+            ('a', '1'),
+            ('2', 'two'),
+        ]),
+        'dict_choices': {
+            'a': '1',
+            '2': 'two',
+        },
+        'html': '<b>html!</b>',
+        'static_url': settings.STATIC_URL,
+        'static_storage': settings.STATICFILES_STORAGE,
+        'partial_static_url': r'%sadmin/(.+)\.css' % settings.STATIC_URL,
+        'partial_static_url2': r'^%sadmin/(.+)\.css|\.txt' % settings.STATIC_URL,
     }
     form_class = generate_form(data)
     uuid = uuid4()
@@ -309,7 +334,15 @@ def test_generate_form():
         'float': '2.3',
         'uuid': str(uuid),
         'list': ['a'],
-        'set': 'b'
+        'set': 'b',
+        'regex': 'test',
+        'ordereddict_choices': 'a',
+        'dict_choices': '2',
+        'html': '<em>html!</em>',
+        'static_url': 'admin/css/login.css',
+        'static_storage': 'admin/css/login.css',
+        'partial_static_url': 'admin/css/login.css',
+        'partial_static_url2': 'admin/js/LICENSE-JQUERY.txt',
     }
     form = form_class(data=validate_data)
     valid = form.is_valid()
@@ -332,6 +365,94 @@ def test_generate_form():
         'list': ['a'],
         'time': time(4, 23),
         'set': 'b',
-        'date': daaate
+        'date': daaate,
+        'regex': 'test',
+        'dict_choices': '2',
+        'ordereddict_choices': 'a',
+        'html': '<em>html!</em>',
+        'static_url': 'admin/css/login.css',
+        'static_storage': 'admin/css/login.css',
+        'partial_static_url': 'admin/css/login.css',
+        'partial_static_url2': 'admin/js/LICENSE-JQUERY.txt',
     }
     assert valid is True
+
+
+@pytest.mark.xfail(django.VERSION[:2] < (1, 8), reason="requires Django 1.8 to "
+                                                       "use the duration field")
+def test_generate_form_duration_field():
+    data = {
+        'timedelta': timedelta(days=2),
+    }
+    form_class = generate_form(data)
+    validate_data = {
+        'timedelta': '1',
+    }
+    form = form_class(data=validate_data)
+    valid = form.is_valid()
+    assert form.errors == {}
+    assert form.cleaned_data == {
+        'timedelta': timedelta(0, 1),
+    }
+    assert valid is True
+
+
+def test_generate_form_cannot_figure_out_appropriate_type():
+    data = {
+        'unknown': empty,
+    }
+    with pytest.raises(ValidationError):
+        form_class = generate_form(data)
+
+
+def test_list_files_in_static():
+    found = tuple(list_files_in_static())
+    found2 = tuple(list_files_in_static())
+    # make sure they're the same.
+    assert found == found2
+    assert len(found) == 1
+    assert found[0][0] == 'admin'
+    assert ('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt') in found[0][1]
+    assert ('admin/css/changelists.css', 'css/changelists.css') in found[0][1]
+
+
+def test_list_files_in_static_partial():
+    found = tuple(list_files_in_static(only_matching='\.txt$'))
+    found2 = tuple(list_files_in_static(only_matching='\.txt$'))
+    # make sure they're the same.
+    assert found == found2
+    assert len(found) == 1
+    assert found[0][0] == 'admin'
+    assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
+
+
+def test_list_files_in_default_storage():
+    found = tuple(list_files_in_default_storage())
+    found2 = tuple(list_files_in_default_storage())
+    # make sure they're the same.
+    assert found == found2
+    assert len(found) == 4
+    assert found[0][0] == 'None'
+    assert found[2][0] == 'static'
+    assert found[3][0] == 'templates'
+    assert found[2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+                           ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
+    assert found[3][1] == (('templates/base.html', 'base.html'),)
+
+
+def test_list_files_in_default_storage_partial():
+    found = tuple(list_files_in_default_storage(only_matching='\.txt$'))
+    found2 = tuple(list_files_in_default_storage(only_matching='\.txt$'))
+    # make sure they're the same.
+    assert found == found2
+    assert len(found) == 1
+    assert found[0][0] == 'static'
+    assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
+                           ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
+
+
+def test_get_htmlfield():
+    lol = get_htmlfield(initial='woo')
+    assert isinstance(lol, fields.CharField) is True
+    assert isinstance(lol, BleachField) is True
+    assert lol.initial == 'woo'

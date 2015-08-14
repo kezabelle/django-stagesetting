@@ -118,11 +118,14 @@ settings.configure(
         'SPECIAL_STUFF':  [{
             'static_selection': '/__static__/',
             'static_storage': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+            'partial_static':  r'^/__static__/admin/(.+)\.css|\.txt$',
             'media_storage': 'django.core.files.storage.FileSystemStorage',
             'media_root': '/__media__/',
+            'partial_media': r'^/__media__/(.+)\.txt$',
             'html': '<b>test</b>',
         }, {
             'static_selection': 'admin/css/login.css',
+            'partial_static': 'admin/js/LICENSE-JQUERY.txt',
         }]
     },
 )

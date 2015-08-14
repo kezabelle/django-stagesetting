@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
+import os
+from django.utils.text import slugify
+from functools import partial
+from django.forms import TypedChoiceField
+import re
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta, date, time
 from decimal import Decimal
@@ -202,11 +207,20 @@ class FormRegistry(object):
 registry = FormRegistry(name='default')
 
 
-def list_files_in_static():
+def _get_files_in_static_storage(only_matching=None):
     finders = get_finders()
     finders_results = (finder.list(ignore_patterns=None) for finder in finders)
     found_files = chain.from_iterable(finders_results)
+    filenames_only = (filename for filename, storage in found_files)
+    if only_matching is not None:
+        # Apply a regex search over the given filenames to choose only
+        # matching elements.
+        filenames_only = (fname for fname in filenames_only
+                          if re.search(only_matching, fname))
+    return filenames_only
 
+
+def make_storage_choices(found_files):
     def first_part_of_path(x):
         """
         Ensure that items without a directory part are grouped together before
@@ -218,8 +232,7 @@ def list_files_in_static():
             return _('None')
         return leftmost
 
-    filenames_only = sorted((filename for filename, storage in found_files),
-                            key=first_part_of_path)
+    filenames_only = sorted(found_files, key=first_part_of_path)
 
     def tuple_to_choices(groupname, flat_tuple):
         """
@@ -245,9 +258,63 @@ def list_files_in_static():
     return fixed
 
 
-def list_files_in_default_storage():
-    dirs, files = default_storage.listdir('')
-    return sorted((f, f) for f in files)
+def list_files_in_static(only_matching=None):
+    return make_storage_choices(
+        found_files=_get_files_in_static_storage(only_matching=only_matching))
+
+
+class StaticFilesChoiceField(TypedChoiceField):
+    def __init__(self, *args, **kwargs):
+        if 'choices' not in kwargs:  # pragma: no cover
+            kwargs['choices'] = list_files_in_static
+        kwargs['coerce'] = force_text
+        super(StaticFilesChoiceField, self).__init__(*args, **kwargs)
+
+
+class PartialStaticFilesChoiceField(StaticFilesChoiceField):
+    def __init__(self, only_matching, *args, **kwargs):
+        if 'choices' not in kwargs:  # pragma: no cover
+            kwargs['choices'] = partial(list_files_in_static,
+                                        only_matching=only_matching)
+        super(StaticFilesChoiceField, self).__init__(*args, **kwargs)
+
+
+def _get_files_in_default_storage(directory=''):
+    dirs, files = default_storage.listdir(directory)
+    for fn in files:
+        location = os.path.join(directory, fn)
+        yield location
+    for subdir in dirs:
+        if directory:
+            subdir = os.path.join(directory, subdir)
+        for fn in _get_files_in_default_storage(directory=subdir):
+            yield fn
+
+
+def list_files_in_default_storage(only_matching=None):
+    filenames_only = _get_files_in_default_storage()
+    if only_matching is not None:
+        # Apply a regex search over the given filenames to choose only
+        # matching elements.
+        filenames_only = (fname for fname in filenames_only
+                          if re.search(only_matching, fname))
+    return make_storage_choices(found_files=filenames_only)
+
+
+class DefaultStorageFilesChoiceField(TypedChoiceField):
+    def __init__(self, *args, **kwargs):
+        if 'choices' not in kwargs:  # pragma: no cover
+            kwargs['choices'] = list_files_in_default_storage
+        kwargs['coerce'] = force_text
+        super(DefaultStorageFilesChoiceField, self).__init__(*args, **kwargs)
+
+
+class PartialDefaultStorageFilesChoiceField(DefaultStorageFilesChoiceField):
+    def __init__(self, only_matching, *args, **kwargs):
+        if 'choices' not in kwargs:  # pragma: no cover
+            kwargs['choices'] = partial(list_files_in_default_storage,
+                                        only_matching=only_matching)
+        super(PartialDefaultStorageFilesChoiceField, self).__init__(*args, **kwargs)
 
 
 def get_htmlfield(**kwargs):
@@ -259,7 +326,7 @@ def get_htmlfield(**kwargs):
                        "using a CharField")
         HTMLField = forms.CharField
 
-    def ckeditor_field(**kws):
+    def ckeditor_field(**kws):  # pragma: no cover
         try:
             reverse('ckeditor_upload')
         except NoReverseMatch:
@@ -271,12 +338,12 @@ def get_htmlfield(**kwargs):
         kws.update(widget=CKEditorWidget)
         return HTMLField(**kws)
 
-    def tinymce_field(**kws):
+    def tinymce_field(**kws):  # pragma: no cover
         from tinymce.widgets import TinyMCE
         kws.update(widget=TinyMCE)
         return HTMLField(**kws)
 
-    def django_markdown_field(**kws):
+    def django_markdown_field(**kws):  # pragma: no cover
         try:
             reverse('django_markdown_preview')
         except NoReverseMatch:
@@ -287,12 +354,12 @@ def get_htmlfield(**kwargs):
         kws.update(widget=MarkdownWidget)
         return HTMLField(**kws)
 
-    def pagedown_field(**kws):
+    def pagedown_field(**kws):  # pragma: no cover
         from pagedown.widgets import PagedownWidget
         kws.update(widget=PagedownWidget)
         return HTMLField(**kws)
 
-    def epiceditor_field(**kws):
+    def epiceditor_field(**kws):  # pragma: no cover
         from epiceditor.widgets import EpicEditorWidget
         kws.update(widget=EpicEditorWidget)
         return HTMLField(**kws)
@@ -305,14 +372,16 @@ def get_htmlfield(**kwargs):
         ('epiceditor', epiceditor_field),
     ])
     for appname, field_function in known.items():
-        if appname not in settings.INSTALLED_APPS:
+        if appname not in settings.INSTALLED_APPS:  # pragma: no cover
             continue
         field = field_function(**kwargs)
         if field is None:
+            # Some of the widgets need urls configured. If they haven't been,
+            # they're unusable so try the next one.
             continue
         return field
-    return forms.CharField(**kwargs)
-        
+    # Bleach or CharField.
+    return HTMLField(**kwargs)
 
 
 def _select_field(v):
@@ -363,6 +432,8 @@ def _select_field(v):
         return forms.ModelChoiceField(**kws)
     elif isinstance(v, QuerySet):
         return forms.ModelMultipleChoiceField(queryset=v)
+    elif isinstance(v, re._pattern_type):
+        return forms.RegexField(regex=v)
     elif isinstance(v, string_types):
         try:
             validate_ipv46_address(v)
@@ -379,19 +450,49 @@ def _select_field(v):
             return forms.EmailField(initial=v)
         except ValidationError:
             pass
-        if ' ' not in v and '-' in v:
-            try:
-                validate_slug(v)
-                return forms.SlugField(initial=v)
-            except ValidationError:
-                pass
+
         if v in (settings.STATIC_URL, settings.STATICFILES_STORAGE):
-            return forms.ChoiceField(choices=list_files_in_static)
+            return StaticFilesChoiceField()
+
         if v in (settings.MEDIA_URL, settings.DEFAULT_FILE_STORAGE):
-            return forms.ChoiceField(choices=list_files_in_default_storage)
-        # TODO: add filtered staticfiles choices
+            return DefaultStorageFilesChoiceField()
+
+        # filtered by a raw string representing a regex.
+        starts_with_static_url = v.startswith(settings.STATIC_URL)
+        if starts_with_static_url:
+            v = v[len(settings.STATIC_URL):]
+            return PartialStaticFilesChoiceField(only_matching=v)
+
+        # filtered by a raw string representing a regex.
+        starts_with_media_url = v.startswith(settings.MEDIA_URL)
+        if starts_with_media_url:
+            v = v[len(settings.MEDIA_URL):]
+            return PartialDefaultStorageFilesChoiceField(only_matching=v)
+
+        # filtered by a raw string representing a tethered regex.
+        starts_with_tethered_static_url = v.startswith('^%s' % settings.STATIC_URL)  # noqa
+        if starts_with_tethered_static_url:
+            # removes ^/static/ or whatever and instead tethers to the
+            # beginning of the next part.
+            # so ^/static/admin/.+$ should become ^/admin/.+$
+            v = '^%s' % v[len('^%s' % settings.STATIC_URL):]
+            return PartialStaticFilesChoiceField(only_matching=v)
+
+        # filtered by a raw string representing a tethered regex.
+        starts_with_tethered_media_url = v.startswith('^%s' % settings.MEDIA_URL)  # noqa
+        if starts_with_tethered_media_url:
+            # removes ^/media/ or whatever and instead tethers to the
+            # beginning of the next part.
+            # so ^/media/admin/.+$ should become ^/admin/.+$
+            v = '^%s' % v[len('^%s' % settings.MEDIA_URL):]
+            return PartialDefaultStorageFilesChoiceField(only_matching=v)
+
+        if slugify(v) == v:
+            return forms.SlugField(initial=v)
+
         if strip_tags(v) != v:
             return get_htmlfield(initial=v)
+
         return forms.CharField(initial=v)
 
 
@@ -400,15 +501,9 @@ def generate_form(dictionary):
     for k, v in sorted(dictionary.items()):
         if callable(v):
             v = v()
-        form_fields[k] = _select_field(v)
+        newfield = _select_field(v)
+        if newfield is not None:
+            form_fields[k] = newfield
     if len(form_fields) != len(dictionary):
         raise ValidationError("Could not generate all fields for form")
     return type(str('DictionaryGeneratedForm'), (forms.Form,), form_fields)
-
-
-
-
-
-
-
-

@@ -139,9 +139,11 @@ class UpdateSetting(FormView):
 
     def keys_changed(self, old, new):
         keys = []
-        for key in old:
-            if key in new and old[key] != new[key]:
+        for key in new:
+            if key in old and old[key] != new[key]:
                 keys.append({'key': key, 'old': old[key], 'new': new[key]})
+            elif key not in old:
+                keys.append({'key': key, 'old': None, 'new': new[key]})
         return keys
 
     def form_valid(self, form):
