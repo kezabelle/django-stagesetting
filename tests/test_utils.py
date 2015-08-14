@@ -463,7 +463,7 @@ def test_get_htmlfield():
 
 def test_static_files_choice_field():
     field = StaticFilesChoiceField()
-    found = field.choices
+    found = tuple(field.choices)
     assert found[0][0] == 'admin'
     assert ('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt') in found[0][1]
     assert ('admin/css/changelists.css', 'css/changelists.css') in found[0][1]
@@ -471,14 +471,14 @@ def test_static_files_choice_field():
 
 def test_partial_static_files_choice_field():
     field = PartialStaticFilesChoiceField(only_matching='\.txt$')
-    found = field.choices
+    found = tuple(field.choices)
     assert found[0][0] == 'admin'
     assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
 
 
 def test_default_storage_files_choice_field():
     field = DefaultStorageFilesChoiceField()
-    found = field.choices
+    found = tuple(field.choices)
     assert found[2][0] == 'static'
     assert found[3][0] == 'templates'
     assert found[2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
@@ -488,7 +488,7 @@ def test_default_storage_files_choice_field():
 
 def test_partial_default_storage_files_choice_field():
     field = PartialDefaultStorageFilesChoiceField(only_matching='\.txt$')
-    found = field.choices
+    found = tuple(field.choices)
     assert found[0][0] == 'static'
     assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
