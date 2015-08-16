@@ -64,7 +64,7 @@ setup(
     author_email='python-package@kerynknight.com',
     description="Dynamic runtime settings and configuration for Django sites",
     long_description=LONG_DESCRIPTION,
-    keywords=['settings', 'django', 'live', 'dynamic'],
+    keywords=['settings', 'django', 'live', 'dynamic', 'utility'],
     include_package_data=True,
     url='https://github.com/kezabelle/django-stagesetting',
     download_url='https://github.com/kezabelle/django-stagesetting/releases/tag/0.3.2',

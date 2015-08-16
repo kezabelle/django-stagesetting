@@ -32,13 +32,13 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 
-test:
-	python -tt -W ignore setup.py test
+test: clean-pyc clean-test
+	python -B -tt -W ignore setup.py test
 
 release: dist
 	twine upload dist/*
 
-dist: clean
+dist: test clean
 	python setup.py sdist bdist_wheel
 	ls -l dist
 
