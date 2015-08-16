@@ -442,7 +442,8 @@ def test_list_files_in_default_storage():
     assert found[-1][0] == 'templates'
     assert found[-2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
-    assert found[-1][1] == (('templates/base.html', 'base.html'),)
+    assert found[-1][1] == (('templates/base.html', 'base.html'),
+                            ('templates/example_usage.html', 'example_usage.html'))
 
 
 def test_list_files_in_default_storage_partial():
@@ -485,7 +486,8 @@ def test_default_storage_files_choice_field():
     assert found[-1][0] == 'templates'
     assert found[-2][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
-    assert found[-1][1] == (('templates/base.html', 'base.html'),)
+    assert found[-1][1] == (('templates/base.html', 'base.html'),
+                            ('templates/example_usage.html', 'example_usage.html'))
 
 
 def test_partial_default_storage_files_choice_field():

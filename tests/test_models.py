@@ -121,7 +121,7 @@ def test_runtimesettingswrapper():
     assert bool(wrapped) is True
     assert 'TEST' in wrapped
     assert wrapped.TEST == {'count': 2}
-    data = set(x for x in wrapped)
+    data = set(x for x, v in wrapped)
     assert data == {'TEST', 'TEST_DEFAULT'}
 
 
