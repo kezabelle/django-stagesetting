@@ -147,16 +147,16 @@ class FormRegistry(object):
                         duped[k] = v
                 default = duped
             self.register(key=setting_name, form_class=form, default=default)
-
-        db_for_rw = model.objects.using(self._name)
-        wanted = set(self.keys())
-        existing = set(db_for_rw.filter(key__in=wanted)
-                       .values_list('key', flat=True))
-        missing = wanted - existing
-        models = [model(key=setting_name,
-                        raw_value=self.get_default(key=setting_name))
-                  for setting_name in missing]
-        return db_for_rw.bulk_create(models)
+        return None
+        # db_for_rw = model.objects.using(self._name)
+        # wanted = set(self.keys())
+        # existing = set(db_for_rw.filter(key__in=wanted)
+        #                .values_list('key', flat=True))
+        # missing = wanted - existing
+        # models = [model(key=setting_name,
+        #                 raw_value=self.get_default(key=setting_name))
+        #           for setting_name in missing]
+        # return models
 
     def register(self, key, form_class, default=None):
         validate_setting_name(key)

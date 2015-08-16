@@ -122,17 +122,33 @@ class RuntimeSettingWrapper(object):
 
         with self._lock:
             settings = {}
+            in_defaults = set()
+            in_db = set()
             # Set up defaults which are registered.
             for default_key, default_value in registry._defaults.items():
                 settings[default_key] = default_value
+                in_defaults.add(default_key)
 
             # Set up anything that's been configured into the database.
             keys = frozenset(registry._registry.keys())
             for setting in RuntimeSetting.objects.filter(key__in=keys).iterator():  # noqa
                 try:
+                    # this may trigger further database hits for FK fields
+                    # (modelchoice, modelmultiplechoice)
                     settings[setting.key] = setting.value
+                    in_db.add(setting.key)
                 except ValidationError:
                     continue
+
+            not_in_db = in_defaults - in_db
+            for key in not_in_db:
+                form_class = registry[key]
+                form_data = registry.deserialize(registry.get_default(key=key))
+                form = form_class(data=form_data)
+                # this may trigger further database hits for FK fields
+                # (modelchoice, modelmultiplechoice)
+                form.is_valid()
+                settings[key] = form.cleaned_data
 
             super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
         return True

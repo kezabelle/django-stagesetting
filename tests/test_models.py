@@ -110,12 +110,12 @@ def test_runtimesettingswrapper():
 
     wrapped = RuntimeSettingWrapper()
     assert wrapped['TEST'] == {'count': 2}
-    assert wrapped['TEST_DEFAULT'] == {'count': '14'}
+    assert wrapped['TEST_DEFAULT'] == {'count': 14}
 
     # new values won't be discovered until the existing data is updated
     RuntimeSetting.objects.create(key="TEST_DEFAULT",
                                   raw_value=json.dumps(test2_value))
-    assert wrapped['TEST_DEFAULT'] == {'count': '14'}
+    assert wrapped['TEST_DEFAULT'] == {'count': 14}
     wrapped2 = RuntimeSettingWrapper()
     assert wrapped2['TEST_DEFAULT'] == {'count': 4}
     assert bool(wrapped) is True
