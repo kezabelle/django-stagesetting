@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from functools import partial
 from django.core.checks import Warning
 from django.core.checks import Error
+from django.core.checks import Info
 from django.core.exceptions import ValidationError
 from django.utils.six import string_types
 from stagesetting.utils import generate_form
@@ -20,6 +21,10 @@ W001 = partial(Warning,
     msg="You don't have any settings defined",
     hint="Set STAGESETTINGS in your project settings module",
     id='stagesetting.W001',
+)
+
+I001 = partial(Info,
+    id="stagesetting.I001",
 )
 
 E001 = partial(Error,
@@ -98,8 +103,8 @@ def validate_params_of_list(key, value):
         return [E003(obj=key)]
 
     # first try to make a form
-    first_param_is_dict_form = validate_as_dict(key, value=value[0])
-    if first_param_is_dict_form is None:
+    form = validate_as_dict(key, value=value[0])
+    if form is None:
         if not isinstance(value[0], string_types):
             return [E004(obj=key)]
         # then try and import a form
@@ -119,6 +124,14 @@ def validate_params_of_list(key, value):
             validate_default(value[1])
         except ValidationError as exc:
             errors.append(E005(obj=key))
+        else:
+            fields_in_form = frozenset(form.base_fields.keys())
+            fields_in_defaults = frozenset(value[1].keys())
+            missing = fields_in_form - fields_in_defaults
+            if missing:
+                errors.append(I001(
+                    obj=key, msg='The following keys are not in '
+                                 'the defaults: %s' % ', '.join(missing)))
     return errors
 
 
