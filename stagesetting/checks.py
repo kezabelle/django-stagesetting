@@ -104,7 +104,9 @@ def validate_params_of_list(key, value):
 
     # first try to make a form
     form = validate_as_dict(key, value=value[0])
+    ignore_defaults_set_check = True
     if form is None:
+        ignore_defaults_set_check = False
         if not isinstance(value[0], string_types):
             return [E004(obj=key)]
         # then try and import a form
@@ -117,6 +119,8 @@ def validate_params_of_list(key, value):
             validate_formish(form)
         except ValidationError:
             errors.append(E007(obj=key))
+            # we won't have `base_fields`, so don't check it ...
+            ignore_defaults_set_check = True
 
     # make sure the second param feels like a dictionary
     if config_length == 2:
@@ -125,13 +129,16 @@ def validate_params_of_list(key, value):
         except ValidationError as exc:
             errors.append(E005(obj=key))
         else:
-            fields_in_form = frozenset(form.base_fields.keys())
-            fields_in_defaults = frozenset(value[1].keys())
-            missing = fields_in_form - fields_in_defaults
-            if missing:
-                errors.append(I001(
-                    obj=key, msg='The following keys are not in '
-                                 'the defaults: %s' % ', '.join(missing)))
+            # if the first part is not a dict, and the second part is,
+            # report on what is missing.
+            if ignore_defaults_set_check is False:
+                fields_in_form = frozenset(form.base_fields.keys())
+                fields_in_defaults = frozenset(value[1].keys())
+                missing = fields_in_form - fields_in_defaults
+                if missing:
+                    errors.append(I001(
+                        obj=key, msg='The following keys are not in '
+                                     'the defaults: %s' % ', '.join(missing)))
     return errors
 
 

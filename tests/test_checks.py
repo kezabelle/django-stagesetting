@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.test import override_settings
 from stagesetting.checks import check_setting
-from stagesetting.checks import W001, E001, E003, E002, E004, E006, E007, E005
+from stagesetting.checks import W001, E001, E003, E002, E004, E006, E007, E005, I001
 
 
 def test_setting_not_set():
@@ -69,6 +69,28 @@ def test_invalid_form_object_for_value_argument_one():
         result = check_setting(app_configs=None)
         assert len(result) == 1
         assert result[0].id == E007().id
+
+
+def test_form_missing_full_defaults_but_wont_be_checked():
+    settings = {
+        'NOT_A_STRING': ['django.VERSION', {}],
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert len(result) == 1
+        assert result[0].id == E007().id
+
+
+def test_form_missing_full_defaults():
+    settings = {
+        'NOT_A_STRING': ['django.contrib.auth.forms.AuthenticationForm', {
+            'password': 'lolno',
+        }],
+    }
+    with override_settings(STAGESETTINGS=settings):
+        result = check_setting(app_configs=None)
+        assert len(result) == 1
+        assert result[0].id == I001(msg='').id
 
 
 def test_invalid_datatype_for_value_argument_two_defauls():
