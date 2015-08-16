@@ -62,12 +62,6 @@ def formregistry_ready():
 
 
 @pytest.mark.django_db
-def test_formregistry_ready():
-    result = formregistry_ready()
-    assert len(result) == 2
-
-
-@pytest.mark.django_db
 def test_formregistry_ready_dict():
     fr = FormRegistry(name='default')
     newconfig = {
@@ -81,18 +75,18 @@ def test_formregistry_ready_dict():
     with override_settings(STAGESETTINGS=newconfig):
         with patch_logger('stagesetting.utils', 'info') as logger_calls:
             result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='HELLO2')
-        assert fr.deserialize(implicit.raw_value) == {
-            'email': 'a@b.com',
-            'int': 1,
-            'url': 'https://news.bbc.co.uk/'
-        }
+        # implicit = RuntimeSetting.objects.get(key='HELLO2')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'email': 'a@b.com',
+        #     'int': 1,
+        #     'url': 'https://news.bbc.co.uk/'
+        # }
         assert fr._get_default(key='HELLO2') == {
             "email": "a@b.com",
             "int": 1,
             "url": "https://news.bbc.co.uk/"
         }
-    assert len(result) == 2
+    # assert len(result) == 2
     assert logger_calls == ['HELLO2 config is a dictionary, assuming it '
                             'represents both the form and default values']
 
@@ -114,18 +108,18 @@ def test_formregistry_ready_dict_with_different_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='HELLO2')
-        assert fr.deserialize(implicit.raw_value) == {
-            'email': 'a@b.com',
-            'int': 3,
-            'url': 'https://www.bbc.com/'
-        }
+        # implicit = RuntimeSetting.objects.get(key='HELLO2')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'email': 'a@b.com',
+        #     'int': 3,
+        #     'url': 'https://www.bbc.com/'
+        # }
         assert fr._get_default(key='HELLO2') == {
             "email": "a@b.com",
             "int": 3,
             "url": "https://www.bbc.com/"
         }
-    assert len(result) == 2
+    # assert len(result) == 2
 
 
 @pytest.mark.django_db
@@ -143,18 +137,18 @@ def test_formregistry_ready_dict_with_partial_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='HELLO4')
-        assert fr.deserialize(implicit.raw_value) == {
-            'email': 'a@b.com',
-            'int': 12,
-            'url': 'https://www.bbc.com/'
-        }
+        # implicit = RuntimeSetting.objects.get(key='HELLO4')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'email': 'a@b.com',
+        #     'int': 12,
+        #     'url': 'https://www.bbc.com/'
+        # }
         assert fr._get_default(key='HELLO4') == {
             "email": "a@b.com",
             "int": 12,
             "url": "https://www.bbc.com/"
         }
-    assert len(result) == 1
+    # assert len(result) == 1
 
 
 @pytest.mark.django_db
@@ -170,16 +164,16 @@ def test_formregistry_complex_dict_with_no_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
-        assert fr.deserialize(implicit.raw_value) == {
-            'model': '2',
-            'queryset': []
-        }
+        # implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'model': '2',
+        #     'queryset': []
+        # }
         assert fr._get_default(key='COMPLEX_NO_DEFAULTS') == {
             'model': user,
             'queryset': user_qs,
         }
-    assert len(result) == 1
+    # assert len(result) == 1
 
 
 @pytest.mark.django_db
@@ -197,16 +191,16 @@ def test_formregistry_complex_dict_with_partial_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
-        assert fr.deserialize(implicit.raw_value) == {
-            'model': 1,
-            'queryset': []
-        }
+        # implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'model': 1,
+        #     'queryset': []
+        # }
         assert fr._get_default(key='COMPLEX_NO_DEFAULTS') == {
             'model': 1,
             'queryset': user_qs,
         }
-    assert len(result) == 1
+    # assert len(result) == 1
 
 
 @pytest.mark.django_db
@@ -224,16 +218,16 @@ def test_formregistry_complex_dict_with_different_partial_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
-        assert fr.deserialize(implicit.raw_value) == {
-            'model': '2',
-            'queryset': [11, 2],
-        }
+        # implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'model': '2',
+        #     'queryset': [11, 2],
+        # }
         assert fr._get_default(key='COMPLEX_NO_DEFAULTS') == {
             'model': user,
             'queryset': [11, 2],
         }
-    assert len(result) == 1
+    # assert len(result) == 1
 
 
 @pytest.mark.django_db
@@ -253,23 +247,23 @@ def test_formregistry_complex_dict_with_completely_different_defaults():
     }
     with override_settings(STAGESETTINGS=newconfig):
         result = fr.ready(sender=None, instance=None, model=RuntimeSetting)
-        implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
-        assert fr.deserialize(implicit.raw_value) == {
-            'model': 'ohgod',
-            'queryset': [11, 2],
-        }
+        # implicit = RuntimeSetting.objects.get(key='COMPLEX_NO_DEFAULTS')
+        # assert fr.deserialize(implicit.raw_value) == {
+        #     'model': 'ohgod',
+        #     'queryset': [11, 2],
+        # }
         assert fr._get_default(key='COMPLEX_NO_DEFAULTS') == {
             'model': 'ohgod',
             'queryset': [11, 2],
         }
-    assert len(result) == 1
+    # assert len(result) == 1
 
 
 class FormRegistryTestCase(TransactionTestCase):
     def test_ready(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(0):
             result = formregistry_ready()
-        self.assertEqual(len(result), 2)
+        self.assertIsNone(result)
 
 
 @pytest.mark.django_db
