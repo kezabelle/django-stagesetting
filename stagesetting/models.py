@@ -105,7 +105,7 @@ class RuntimeSettingWrapper(object):
     def __repr__(self):
         msg_dict = {'cls': self.__class__.__name__}
         if self.settings is None:
-            msg_dict.update(settings=self.settings)
+            msg_dict.update(settings=registry.keys())
             return '<%(cls)s [Unevaluated] settings=%(settings)r>' % msg_dict
         msg_dict.update(settings=self.settings.keys())
         return '<%(cls)s [Evaluated] settings=%(settings)r>' % msg_dict
@@ -155,7 +155,7 @@ class RuntimeSettingWrapper(object):
 
     def __iter__(self):
         self._fetch_settings()
-        return self.settings.__iter__()
+        return iter(self.items())
 
     def __setattr__(self, key, value):
         raise NotImplementedError
@@ -168,3 +168,15 @@ class RuntimeSettingWrapper(object):
 
     def __delitem__(self, item):
         raise NotImplementedError
+
+    def items(self):
+        self._fetch_settings()
+        return self.settings.items()
+
+    def keys(self):
+        self._fetch_settings()
+        return self.settings.keys()
+
+    def values(self):
+        self._fetch_settings()
+        return self.settings.values()

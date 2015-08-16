@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Manual referencing</h3>
+    <dl>
+        <dt>DATES</dt>
+        <dd>{{ STAGESETTING.DATES }}</dd>
+        <dt>USERS</dt>
+        <dd>{{ STAGESETTING.USERS }}</dd>
+        <dt>LIST_PER_PAGE</dt>
+        <dd>{{ STAGESETTING.LIST_PER_PAGE }}</dd>
+        <dt>DATETIMES</dt>
+        <dd>{{ STAGESETTING.DATETIMES }}</dd>
+        <dt>GENERATED</dt>
+        <dd>{{ STAGESETTING.GENERATED }}</dd>
+        <dt>SPECIAL_STUFF</dt>
+        <dd>{{ STAGESETTING.SPECIAL_STUFF }}</dd>
+    </dl>
+    <h3>Looping over the wrapper</h3>
+    <dl>
+    {% for k, v in STAGESETTING %}
+        <dt>{{ k }}</dt>
+        <dd>{{ v }}</dd>
+    {% endfor %}
+    </dl>
+{%  endblock %}
