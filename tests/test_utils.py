@@ -10,8 +10,7 @@ from decimal import Decimal
 from collections import OrderedDict
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.forms import forms
-from django.forms import fields
+from django.forms import fields, ModelChoiceField, ModelMultipleChoiceField
 from django.utils.functional import empty
 import re
 import django
@@ -498,3 +497,152 @@ def test_partial_default_storage_files_choice_field():
     assert found[0][0] == 'static'
     assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
+
+
+def test_generate_form_none_becomes_nullbooleanfield():
+    form = generate_form({'field': None})()
+    assert isinstance(form.fields['field'], fields.NullBooleanField)
+
+
+def test_generate_form_datetime_becomes_datetimefield():
+    form = generate_form({'field': datetime.now()})()
+    assert isinstance(form.fields['field'], fields.DateTimeField) is True
+
+
+def test_generate_form_date_becomes_datefield():
+    form = generate_form({'field': datetime.now().date()})()
+    assert isinstance(form.fields['field'], fields.DateField) is True
+
+
+def test_generate_form_time_becomes_timefield():
+    form = generate_form({'field': time(4, 23)})()
+    assert isinstance(form.fields['field'], fields.TimeField) is True
+
+
+def test_generate_form_decimal_becomes_decimalfield():
+    form = generate_form({'field': Decimal('1.0')})()
+    assert isinstance(form.fields['field'], fields.DecimalField) is True
+
+
+def test_generate_form_float_becomes_floatfield():
+    form = generate_form({'field': 1.5})()
+    assert isinstance(form.fields['field'], fields.FloatField) is True
+
+
+def test_generate_form_bool_becomes_booleanfield():
+    form = generate_form({'field': True})()
+    assert isinstance(form.fields['field'], fields.BooleanField) is True
+
+
+def test_generate_form_int_becomes_integerfield():
+    form = generate_form({'field': 1})()
+    assert isinstance(form.fields['field'], fields.IntegerField) is True
+
+
+def test_generate_form_list_becomes_multiplechoicefield():
+    form = generate_form({'field': ['a', 'b']})()
+    assert isinstance(form.fields['field'], fields.MultipleChoiceField) is True
+
+
+def test_generate_form_tuple_becomes_multiplechoicefield():
+    form = generate_form({'field': ('a', 'b')})()
+    assert isinstance(form.fields['field'], fields.MultipleChoiceField) is True
+
+
+def test_generate_form_ordereddict_becomes_choicefield():
+    form = generate_form({'field': OrderedDict([
+        ['1', '2'],
+        ['2', '4'],
+    ])})()
+    assert isinstance(form.fields['field'], fields.ChoiceField) is True
+
+
+def test_generate_form_dict_becomes_choicefield():
+    form = generate_form({'field': {
+        'a': 'b',
+        'c': 'd',
+    }})()
+    assert isinstance(form.fields['field'], fields.ChoiceField) is True
+
+
+def test_generate_form_set_becomes_choicefield():
+    form = generate_form({'field': {'a', 'b', 'c'}})()
+    assert isinstance(form.fields['field'], fields.ChoiceField) is True
+
+
+def test_generate_form_model_becomes_modelchoicefield():
+    form = generate_form({'field': get_user_model()(pk=1)})()
+    assert isinstance(form.fields['field'], ModelChoiceField) is True
+
+
+def test_generate_form_queryset_becomes_modelmultiplechoicefield():
+    form = generate_form({'field': get_user_model().objects.all()})()
+    assert isinstance(form.fields['field'], ModelMultipleChoiceField) is True
+
+
+def test_generate_form_regex_becomes_regexfield():
+    form = generate_form({'field': re.compile('')})()
+    assert isinstance(form.fields['field'], fields.RegexField) is True
+
+
+def test_generate_form_ipish_string_becomes_genericipfield():
+    form = generate_form({'field': '127.0.0.1'})()
+    assert isinstance(form.fields['field'], fields.GenericIPAddressField) is True
+
+
+def test_generate_form_urlish_string_becomes_urlfield():
+    form = generate_form({'field': 'https://news.bbc.co.uk/'})()
+    assert isinstance(form.fields['field'], fields.URLField) is True
+
+
+def test_generate_form_emailish_string_becomes_emailfield():
+    form = generate_form({'field': 'a@b.com'})()
+    assert isinstance(form.fields['field'], fields.EmailField) is True
+
+
+def test_generate_form_staticurl_becomes_staticfileschoicefield():
+    form = generate_form({'field': settings.STATIC_URL})()
+    assert isinstance(form.fields['field'], StaticFilesChoiceField) is True
+
+
+def test_generate_form_staticstorage_becomes_staticfileschoicefield():
+    form = generate_form({'field': settings.STATICFILES_STORAGE})()
+    assert isinstance(form.fields['field'], StaticFilesChoiceField) is True
+
+
+
+def test_generate_form_staticurl_startswith_becomes_staticfileschoicefield():
+    form = generate_form({'field': '%s/test' % settings.STATIC_URL})()
+    assert isinstance(form.fields['field'], PartialStaticFilesChoiceField) is True
+
+
+def test_generate_form_mediaurl_becomes_staticfileschoicefield():
+    form = generate_form({'field': settings.MEDIA_URL})()
+    assert isinstance(form.fields['field'], DefaultStorageFilesChoiceField) is True
+
+
+def test_generate_form_mediastorage_becomes_staticfileschoicefield():
+    form = generate_form({'field': settings.DEFAULT_FILE_STORAGE})()
+    assert isinstance(form.fields['field'], DefaultStorageFilesChoiceField) is True
+
+
+def test_generate_form_mediaurl_startswith_becomes_staticfileschoicefield():
+    form = generate_form({'field': '%s/test' % settings.MEDIA_URL})()
+    assert isinstance(form.fields['field'], PartialDefaultStorageFilesChoiceField) is True
+
+
+def test_generate_form_slugish_string_becomes_slugfield():
+    form = generate_form({'field': 'a-b'})()
+    assert isinstance(form.fields['field'], fields.SlugField) is True
+
+
+def test_generate_form_slugish_string_has_invalid_slug_chars_slugfield():
+    form = generate_form({'field': 'a-b!!!'})()
+    assert isinstance(form.fields['field'], fields.SlugField) is False
+    assert isinstance(form.fields['field'], fields.CharField) is True
+
+
+def test_generate_form_slugish_string_has_invalid_slug_chars_slugfield2():
+    form = generate_form({'field': 'a-b '})()
+    assert isinstance(form.fields['field'], fields.SlugField) is False
+    assert isinstance(form.fields['field'], fields.CharField) is True

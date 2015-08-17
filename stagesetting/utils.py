@@ -498,7 +498,7 @@ def _select_field(v):
             v = '^%s' % v[len('^%s' % settings.MEDIA_URL):]
             return PartialDefaultStorageFilesChoiceField(only_matching=v)
 
-        if slugify(v) == v:
+        if ' ' not in v and '-' in v and slugify(v) == v:
             return forms.SlugField(initial=v)
 
         if strip_tags(v) != v:
