@@ -7,4 +7,5 @@ include tox.ini
 recursive-include stagesetting *.html
 recursive-include test_app *.html
 recursive-include test_app *.py
+recursive-include test_app *.txt
 recursive-include tests *.py
