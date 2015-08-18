@@ -4,8 +4,6 @@ django-stagesetting 0.3.2
 An application for managing site configuration through normal `Django`_ forms,
 and thus through the `admin site`_.
 
-Yay, I've made another app to abuse `contrib.admin`_.
-
 .. |travis_stable| image:: https://travis-ci.org/kezabelle/django-stagesetting.svg?branch=0.3.2
   :target: https://travis-ci.org/kezabelle/django-stagesetting
 
@@ -142,6 +140,23 @@ following translations will be applied:
   - `EmailField`_
   - `SlugField`_
   - `CharField`_
+- Some strings are **really** special, and will instead turn into one of the following:
+
+  - if the string == ``STATIC_URL`` or ``STATICFILES_STORAGE`` the field will be
+    a `ChoiceField`_ whose options are all the files found by the
+    project's ``STATICFILES_FINDERS``.
+  - if the string == ``MEDIA_URL``or ``DEFAULT_FILE_STORAGE`` the field will be
+    a `ChoiceField`_ whose options are all the files found by
+    ``DEFAULT_FILE_STORAGE``.
+  - if the string *starts with* ``STATIC_URL`` it will be the same as using
+    the ``STATIC_URL`` generated field, but is a regular expression for filtering
+    to only certain files (i.e. ``/static/.*\.css$`` would find only css files)
+  - if the string *starts with* ``MEDIA_URL`` it will be the same as above,
+    but for files found in ``DEFAULT_FILE_STORAGE``.
+  - if a string looks like it contains HTML, it will try to use `django-bleach`_
+    for sanitisation, and one of `django-ckeditor`_, `django-tinymce`_,
+    `django-markdown`_, `django-pagedown`_, or `django-epiceditor`_ for an
+    appropriate widget.
 
 Usage in code
 -------------
@@ -168,6 +183,14 @@ If you don't have request, or you're not using the middleware,
 ``stagesetting.context_processors.runtime_settings`` provides a ``STAGESETTING``
 template variable which contains the exact same data.
 
+Finally, if not using the middleware nor the context processor, there is a
+template tag available as a last resort. It's usage is::
+
+    {% load stagesetting %}
+    {% stagesetting as NEW_CONTEXT_VARIABLE %}
+    {{ NEW_CONTEXT_VARIABLE.SETTING_NAME.fieldname }}
+
+
 Usage outside of a request
 --------------------------
 
@@ -183,6 +206,20 @@ Try to keep a single ``RuntimeSettingWrapper`` around for as long as possible,
 rather than creating a new instance everywhere, as the object must fetch
 the available settings from the database the first time it needs them. It
 caches them for it's lifetime thereafter.
+
+Alternatives
+------------
+
+Other apps I know of that achieve similar things, or overlap in some obvious
+way:
+
+- `django-constance`_ is similar
+
+  - uses ``pickle`` to store an arbitrary python value; ``stagesetting`` only
+    stores stuff it can put into JSON and relies on `Django`_ `Forms`_ to inflate
+    the JSON back into python values.
+  - Has both database and redis backends; ``stagesetting`` only supports
+    the database, though it will only do one query most of the time.
 
 
 .. _Django: https://docs.djangoproject.com/en/stable/
@@ -212,3 +249,10 @@ caches them for it's lifetime thereafter.
 .. _TimeField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#timefield
 .. _URLField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#urlfield
 .. _UUIDField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#uuidfield
+.. _django-bleach: https://bitbucket.org/tim_heap/django-bleach
+.. _django-ckeditor: https://github.com/django-ckeditor/django-ckeditor
+.. _django-tinymce: https://github.com/aljosa/django-tinymce
+.. _django-markdown: https://github.com/klen/django_markdown
+.. _django-pagedown: https://github.com/timmyomahony/django-pagedown
+.. _django-epiceditor: https://github.com/barraq/django-epiceditor
+.. _django-constance: https://github.com/jezdez/django-constance

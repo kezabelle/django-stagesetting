@@ -5,6 +5,7 @@ Change log
 ?next?
 ^^^^^^
 
+* Introduced the ``stagesetting`` template tag.
 * Settings are no longer automatically created on app ``ready()``, instead
   the defaults are lazily converted when requested via a ``RuntimeSettingWrapper``
 * Added ``StaticFilesChoiceField`` and ``DefaultStorageFilesChoiceField``,
