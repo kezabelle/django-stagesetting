@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
-import json
 from threading import RLock
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
@@ -122,12 +121,8 @@ class RuntimeSettingWrapper(object):
 
         with self._lock:
             settings = {}
-            in_defaults = set()
+            in_defaults = set(registry._defaults.keys())
             in_db = set()
-            # Set up defaults which are registered.
-            for default_key, default_value in registry._defaults.items():
-                settings[default_key] = default_value
-                in_defaults.add(default_key)
 
             # Set up anything that's been configured into the database.
             keys = frozenset(registry._registry.keys())
@@ -140,16 +135,23 @@ class RuntimeSettingWrapper(object):
                 except ValidationError:
                     continue
 
-            not_in_db = in_defaults - in_db
-            for key in not_in_db:
+            for key in in_defaults:
                 form_class = registry[key]
                 form_data = registry.deserialize(registry.get_default(key=key))
                 form = form_class(data=form_data)
                 # this may trigger further database hits for FK fields
                 # (modelchoice, modelmultiplechoice)
                 form.is_valid()
-                settings[key] = form.cleaned_data
-
+                if key not in settings:
+                    settings[key] = form.cleaned_data
+                else:
+                    # any keys which are in the form and are in the defaults
+                    # may be added to the database-backed value so that stale
+                    # database entries don't have missing data until the next
+                    # time they're saved.
+                    for defaultkey in form.cleaned_data:
+                        if defaultkey not in settings[key]:
+                            settings[key][defaultkey] = form.cleaned_data[defaultkey]
             super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
         return True
 

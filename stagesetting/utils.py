@@ -32,11 +32,10 @@ from django.utils.six import string_types, integer_types
 from .validators import validate_setting_name, validate_default
 from .validators import validate_formish
 from django.core.serializers.json import DjangoJSONEncoder
-
 try:
     forms.fields.CallableChoiceIterator
     CALLABLE_CHOICES = True
-except AttributeError:
+except AttributeError:  # pragma: no cover
     # Django 1.7 doesn't have a way of lazily evaluating a set of choices.
     CALLABLE_CHOICES = False
 
@@ -148,15 +147,6 @@ class FormRegistry(object):
                 default = duped
             self.register(key=setting_name, form_class=form, default=default)
         return None
-        # db_for_rw = model.objects.using(self._name)
-        # wanted = set(self.keys())
-        # existing = set(db_for_rw.filter(key__in=wanted)
-        #                .values_list('key', flat=True))
-        # missing = wanted - existing
-        # models = [model(key=setting_name,
-        #                 raw_value=self.get_default(key=setting_name))
-        #           for setting_name in missing]
-        # return models
 
     def register(self, key, form_class, default=None):
         validate_setting_name(key)

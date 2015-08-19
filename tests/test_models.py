@@ -8,7 +8,7 @@ from django.forms import IntegerField, Form, ModelChoiceField, \
     ModelMultipleChoiceField
 import pytest
 from stagesetting.models import RuntimeSetting, RuntimeSettingWrapper
-from stagesetting.utils import registry
+from stagesetting.utils import registry, generate_form
 
 
 @contextlib.contextmanager
@@ -123,6 +123,20 @@ def test_runtimesettingswrapper():
     assert wrapped.TEST == {'count': 2}
     data = set(x for x, v in wrapped)
     assert data == {'TEST', 'TEST_DEFAULT'}
+
+
+@pytest.mark.django_db
+def test_defaults_mapped_over_db_values():
+    test_value = {'testing': 1, 'count': 2}
+    # this emulates an old value whose defaults have since been updated.
+    RuntimeSetting.objects.create(key="TESTX", raw_value=json.dumps(test_value))
+    test_value.update(another=1.2)
+    form_class = generate_form(test_value)
+    registry.register('TESTX', form_class, {'another': 4.2})
+    wrapper = RuntimeSettingWrapper()
+    value = wrapper.TESTX
+    registry.unregister('TESTX')
+    assert value == {'count': 2, 'testing': 1, 'another': 4.2}
 
 
 @pytest.mark.django_db
