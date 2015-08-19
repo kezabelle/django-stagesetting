@@ -1,6 +1,16 @@
 Change log
 ----------
 
+
+?next?
+^^^^^^
+
+* When a form's values are saved into the database and become stale (because the
+  underlying form/defaults are added to), the new defaults are transparently
+  mapped onto the value when it's made available via the middleware,
+  context processor or template tag.
+
+
 0.4.0
 ^^^^^^
 
