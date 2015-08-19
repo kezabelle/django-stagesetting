@@ -114,7 +114,7 @@ class RuntimeSettingWrapper(object):
         exposed = ['settings']
         if self.settings is None:
             return exposed
-        return self.settings.keys() + exposed
+        return list(self.settings.keys()) + exposed
 
     def _fetch_settings(self):
         if self.settings is not None:
@@ -159,7 +159,9 @@ class RuntimeSettingWrapper(object):
 
     def __getattr__(self, item):
         self._fetch_settings()
-        return self.settings[item]
+        if item in self.settings:
+            return self.settings[item]
+        raise AttributeError("%s not found" % item)
 
     def __len__(self):
         self._fetch_settings()
