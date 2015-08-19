@@ -74,7 +74,7 @@ class AdminFieldForm(object):
             if field.__class__ in ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS:
                 custom = ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS[field.__class__]
                 old_attrs = field.widget.attrs.copy()
-                if field.widget == field.__class__.widget:
+                if field.widget.__class__ == field.__class__.widget:
                     field.widget = custom['widget'](attrs=old_attrs)
             if field.__class__ == fields.SplitDateTimeField:
                 warnings.warn("Don't use SplitDateTimeField it's a multiwidget "
