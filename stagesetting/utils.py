@@ -499,7 +499,11 @@ def _select_field(v):
 
 def generate_form(dictionary):
     form_fields = OrderedDict()
-    for k, v in sorted(dictionary.items()):
+    if hasattr(dictionary, '_OrderedDict__root'):
+        fields_to_make = dictionary.items()
+    else:
+        fields_to_make = sorted(dictionary.items())
+    for k, v in fields_to_make:
         if callable(v):
             v = v()
         newfield = _select_field(v)

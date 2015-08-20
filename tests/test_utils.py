@@ -640,3 +640,16 @@ def test_generate_form_slugish_string_has_invalid_slug_chars_slugfield2():
     form = generate_form({'field': 'a-b '})()
     assert isinstance(form.fields['field'], fields.SlugField) is False
     assert isinstance(form.fields['field'], fields.CharField) is True
+
+
+def test_generate_form_with_sorting():
+    form = generate_form({'z':1, 'a': 2})
+    assert tuple(form.base_fields.keys()) == ('a', 'z')
+
+
+def test_generate_form_without_sorting():
+    form = generate_form(OrderedDict([
+        ('z',1),
+        ('a', 2),
+    ]))
+    assert tuple(form.base_fields.keys()) == ('z', 'a')

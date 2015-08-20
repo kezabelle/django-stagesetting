@@ -5,6 +5,7 @@ Change log
 ?next?
 ^^^^^^
 
+* When generating a form from an ``OrderedDict``, field ordering is now preserved.
 * When a form's values are saved into the database and become stale (because the
   underlying form/defaults are added to), the new defaults are transparently
   mapped onto the value when it's made available via the middleware,
