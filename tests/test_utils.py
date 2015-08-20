@@ -27,7 +27,8 @@ from stagesetting.utils import (JSONEncoder, FormRegistry, generate_form,
                                 StaticFilesChoiceField,
                                 PartialStaticFilesChoiceField,
                                 PartialDefaultStorageFilesChoiceField,
-                                DefaultStorageFilesChoiceField)
+                                DefaultStorageFilesChoiceField,
+                                formstring_from_formclass)
 
 
 @pytest.mark.django_db
@@ -653,3 +654,19 @@ def test_generate_form_without_sorting():
         ('a', 2),
     ]))
     assert tuple(form.base_fields.keys()) == ('z', 'a')
+
+
+def test_generate_form_to_string():
+    form = generate_form(OrderedDict([
+        ('z', '<b>lol</b>'),
+        ('c', 'lol'),
+        ('a', 2),
+        ('e', Decimal('1.0')),
+        ('f', datetime(2015, 10, 10, 10, 10, 10)),
+    ]))
+    assert "\n".join(formstring_from_formclass(form())) == """class ZCAEFForm(forms.Form):
+    z = django_bleach.forms.BleachField(initial='<b>lol</b>', widget=widgets.Textarea)
+    c = fields.CharField(initial='lol', widget=widgets.TextInput)
+    a = fields.IntegerField(initial=2, widget=widgets.NumberInput)
+    e = fields.DecimalField(initial=Decimal('1.0'), widget=widgets.NumberInput)
+    f = fields.DateTimeField(initial=datetime.datetime(2015, 10, 10, 10, 10, 10), widget=widgets.DateTimeInput)"""

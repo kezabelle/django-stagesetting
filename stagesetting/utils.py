@@ -512,3 +512,27 @@ def generate_form(dictionary):
     if len(form_fields) != len(dictionary):
         raise ValidationError("Could not generate all fields for form")
     return type(str('DictionaryGeneratedForm'), (forms.Form,), form_fields)
+
+
+def formstring_from_formclass(form):
+    names = ''.join(x.title() for x in form.fields.keys())
+    yield 'class {name}Form(forms.Form):'.format(name=names)
+    for field_name, field in form.fields.items():
+        field_module = field.__class__.__module__
+        if field_module == 'django.forms.fields':
+            field_module = 'fields'
+        field_type = field.__class__.__name__
+        widget_type = field.widget.__class__.__name__
+        widget_module = field.widget.__class__.__module__
+        if widget_module == 'django.forms.widgets':
+            widget_module = 'widgets'
+        if isinstance(field.initial, string_types):
+            initial = "'%s'" % field.initial
+        else:
+            initial = repr(field.initial)
+        yield ('    %(key)s = %(module)s.%(type)s(initial=%(initial)s, '
+               'widget=%(widget_module)s.%(widget_type)s)' % {
+            'key': field_name, 'module': field_module, 'type': field_type,
+            'initial': initial, 'widget_type': widget_type,
+            'widget_module': widget_module,
+        })
