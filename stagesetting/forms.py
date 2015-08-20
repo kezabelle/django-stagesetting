@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from functools import partial
 from django.forms import fields
 from django.contrib.admin import widgets as admin_widgets
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
@@ -59,7 +60,8 @@ ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS = {
     fields.TimeField: {'widget': admin_widgets.AdminTimeWidget},
     fields.URLField: {'widget': admin_widgets.AdminURLFieldWidget},
     fields.IntegerField: {'widget': widgets.AdminIntegerFieldReplacement},
-    fields.CharField: {'widget': admin_widgets.AdminTextInputWidget},
+    fields.CharField: {'widget': admin_widgets.AdminTextInputWidget,
+                       'widget_attrs': {'class': 'vLargeTextField'}},
     fields.ImageField: {'widget': admin_widgets.AdminFileWidget},
     fields.FileField: {'widget': admin_widgets.AdminFileWidget},
     fields.EmailField: {'widget': admin_widgets.AdminEmailInputWidget},
@@ -73,8 +75,10 @@ class AdminFieldForm(object):
         for field_name, field in self.fields.items():
             if field.__class__ in ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS:
                 custom = ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS[field.__class__]
-                old_attrs = field.widget.attrs.copy()
                 if field.widget.__class__ == field.__class__.widget:
+                    old_attrs = field.widget.attrs.copy()
+                    if 'widget_attrs' in custom:
+                        old_attrs.update(custom['widget_attrs'])
                     field.widget = custom['widget'](attrs=old_attrs)
             if field.__class__ == fields.SplitDateTimeField:
                 warnings.warn("Don't use SplitDateTimeField it's a multiwidget "
