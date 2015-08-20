@@ -122,7 +122,6 @@ class RuntimeSettingWrapper(object):
         with self._lock:
             settings = {}
             in_defaults = set(registry._defaults.keys())
-            in_db = set()
 
             # Set up anything that's been configured into the database.
             keys = frozenset(registry._registry.keys())
@@ -131,27 +130,34 @@ class RuntimeSettingWrapper(object):
                     # this may trigger further database hits for FK fields
                     # (modelchoice, modelmultiplechoice)
                     settings[setting.key] = setting.value
-                    in_db.add(setting.key)
                 except ValidationError:
                     continue
 
             for key in in_defaults:
-                form_class = registry[key]
-                form_data = registry.deserialize(registry.get_default(key=key))
-                form = form_class(data=form_data)
-                # this may trigger further database hits for FK fields
-                # (modelchoice, modelmultiplechoice)
-                form.is_valid()
-                if key not in settings:
-                    settings[key] = form.cleaned_data
-                else:
-                    # any keys which are in the form and are in the defaults
-                    # may be added to the database-backed value so that stale
-                    # database entries don't have missing data until the next
-                    # time they're saved.
-                    for defaultkey in form.cleaned_data:
-                        if defaultkey not in settings[key]:
-                            settings[key][defaultkey] = form.cleaned_data[defaultkey]
+                default_data = registry.deserialize(registry.get_default(key=key))
+                # Find the keys which are in the defaults, which aren't
+                # in the database value.
+                default_keys = set(default_data.keys())
+                saved_keys = set(settings.get(key, {}).keys())
+                missing_from_saved = default_keys - saved_keys
+
+                # db value has stale (missing) keys
+                if missing_from_saved:
+                    form_class = registry[key]
+                    form = form_class(data=default_data)
+                    # this may trigger further database hits for FK fields
+                    # (modelchoice, modelmultiplechoice)
+                    form.is_valid()
+                    if key not in settings:
+                        settings[key] = form.cleaned_data
+                    else:
+                        # any keys which are in the form and are in the defaults
+                        # may be added to the database-backed value so that stale
+                        # database entries don't have missing data until the next
+                        # time they're saved.
+                        for defaultkey in form.cleaned_data:
+                            if defaultkey not in settings[key]:
+                                settings[key][defaultkey] = form.cleaned_data[defaultkey]
             super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
         return True
 
