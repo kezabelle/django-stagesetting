@@ -33,7 +33,7 @@ clean-test:
 	rm -fr htmlcov/
 
 test: clean-pyc clean-test
-	python -B -tt -W ignore setup.py test
+	python -B -R -tt -W ignore setup.py test
 
 release: dist
 	twine upload dist/*
