@@ -1,8 +1,7 @@
 Change log
 ----------
 
-
-?next?
+0.4.1
 ^^^^^^
 
 * When generating a form from an ``OrderedDict``, field ordering is now preserved.

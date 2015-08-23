@@ -42,7 +42,7 @@ LONG_DESCRIPTION = "\r\n\r\n----\r\n\r\n".join(make_readme(HERE))
 
 setup(
     name='django-stagesetting',
-    version='0.4.0',
+    version='0.4.1',
     packages=find_packages(exclude=['tests', 'test_app']),
     install_requires=(
         'Django>=1.7',
@@ -67,7 +67,7 @@ setup(
     keywords=['settings', 'django', 'live', 'dynamic', 'utility'],
     include_package_data=True,
     url='https://github.com/kezabelle/django-stagesetting',
-    download_url='https://github.com/kezabelle/django-stagesetting/releases/tag/0.4.0',
+    download_url='https://github.com/kezabelle/django-stagesetting/releases/tag/0.4.1',
     zip_safe=False,
     license="BSD License",
     classifiers=[
