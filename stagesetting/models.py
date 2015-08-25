@@ -15,6 +15,12 @@ from .validators import validate_setting_name
 
 
 class RuntimeSettingQuerySet(QuerySet):
+    def keys(self):
+        return self.values_list('key', flat=True)
+
+    def known(self, keys):
+        return self.filter(key__in=keys)
+
     def key_exists(self, key):
         try:
             validate_setting_name(key)
@@ -125,7 +131,7 @@ class RuntimeSettingWrapper(object):
 
             # Set up anything that's been configured into the database.
             keys = frozenset(registry._registry.keys())
-            for setting in RuntimeSetting.objects.filter(key__in=keys).iterator():  # noqa
+            for setting in RuntimeSetting.objects.known(keys).iterator():  # noqa
                 try:
                     # this may trigger further database hits for FK fields
                     # (modelchoice, modelmultiplechoice)

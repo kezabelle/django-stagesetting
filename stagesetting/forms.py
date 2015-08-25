@@ -23,7 +23,7 @@ class CreateSettingForm(Form):
 
     def __init__(self, *args, **kwargs):
         super(CreateSettingForm, self).__init__(*args, **kwargs)
-        existing = frozenset(RuntimeSetting.objects.values_list('key', flat=True))
+        existing = frozenset(RuntimeSetting.objects.keys())
         possible = frozenset(registry.keys())
         creatable = possible - existing
         final = list((x, x) for x in creatable)
