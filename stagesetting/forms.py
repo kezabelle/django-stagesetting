@@ -26,7 +26,9 @@ class CreateSettingForm(Form):
         existing = frozenset(RuntimeSetting.objects.keys())
         possible = frozenset(registry.keys())
         creatable = possible - existing
-        final = list((x, x) for x in creatable)
+        def pretty_name(value):
+            return value.replace('_', ' ').strip().title()
+        final = list((x, pretty_name(x)) for x in sorted(creatable))
         self.fields['key'].widget = Select(choices=BLANK_CHOICE_DASH + final)
 
 
