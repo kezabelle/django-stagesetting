@@ -5,7 +5,10 @@ from __future__ import unicode_literals
 from __future__ import division
 from contextlib import contextmanager
 import json
-from unittest.mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:  # Python 2, pragma: no cover
+    from mock import patch
 from uuid import UUID, uuid4
 from datetime import timedelta, datetime, date, time
 from decimal import Decimal

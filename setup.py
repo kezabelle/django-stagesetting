@@ -55,10 +55,11 @@ setup(
         'pytest-random>=0.2',
         'djangorestframework>=3.2',
         'django-bleach>=0.3.0',
+        'mock>=1.3.0',
     ),
-    setup_requires=(
-        "isort>=3.9.6",
-    ),
+    # setup_requires=(
+    #     "isort>=3.9.6",
+    # ),
     cmdclass={'test': PyTest},
     author='Keryn Knight',
     author_email='python-package@kerynknight.com',
