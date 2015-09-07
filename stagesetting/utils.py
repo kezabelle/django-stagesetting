@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
 from django.utils.text import slugify
+from django.utils.lru_cache import lru_cache
 from functools import partial
 from django.forms import TypedChoiceField
 import re
@@ -41,6 +42,7 @@ except AttributeError:  # pragma: no cover
 
 
 logger = logging.getLogger(__name__)
+LRU_MAX = 5
 
 
 class JSONEncoder(DjangoJSONEncoder):
@@ -251,13 +253,13 @@ def make_storage_choices(found_files):
     fixed = ((groupname, tuple_to_choices(groupname, groupitems))
              for groupname, groupitems in evaluated_groups
              if not groupname.startswith('.') and groupitems)
-    # import pdb; pdb.set_trace()
     return fixed
 
 
+@lru_cache(LRU_MAX)
 def list_files_in_static(only_matching=None):
-    return make_storage_choices(
-        found_files=_get_files_in_static_storage(only_matching=only_matching))
+    return tuple(make_storage_choices(
+        found_files=_get_files_in_static_storage(only_matching=only_matching)))
 
 
 class StaticFilesChoiceField(TypedChoiceField):
@@ -290,6 +292,7 @@ def _get_files_in_default_storage(directory=''):
             yield fn
 
 
+@lru_cache(LRU_MAX)
 def list_files_in_default_storage(only_matching=None):
     filenames_only = _get_files_in_default_storage()
     if only_matching is not None:
@@ -297,7 +300,7 @@ def list_files_in_default_storage(only_matching=None):
         # matching elements.
         filenames_only = (fname for fname in filenames_only
                           if re.search(only_matching, fname))
-    return make_storage_choices(found_files=filenames_only)
+    return tuple(make_storage_choices(found_files=filenames_only))
 
 
 class DefaultStorageFilesChoiceField(TypedChoiceField):

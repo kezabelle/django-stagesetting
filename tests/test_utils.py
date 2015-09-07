@@ -3,7 +3,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
+from contextlib import contextmanager
 import json
+from unittest.mock import patch
 from uuid import UUID, uuid4
 from datetime import timedelta, datetime, date, time
 from decimal import Decimal
@@ -28,7 +30,7 @@ from stagesetting.utils import (JSONEncoder, FormRegistry, generate_form,
                                 PartialStaticFilesChoiceField,
                                 PartialDefaultStorageFilesChoiceField,
                                 DefaultStorageFilesChoiceField,
-                                formstring_from_formclass)
+                                formstring_from_formclass, LRU_MAX)
 
 
 @pytest.mark.django_db
@@ -424,6 +426,26 @@ def test_list_files_in_static_partial():
     assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
 
 
+
+@contextmanager
+def isolate_lru_cache(lru_cache_object):
+    """Clear the cache of an LRU cache object on entering and exiting."""
+    lru_cache_object.cache_clear()
+    try:
+        yield
+    finally:
+        lru_cache_object.cache_clear()
+
+
+def test_list_files_in_static_cached():
+    # import pdb; pdb.set_trace()
+    with isolate_lru_cache(list_files_in_static):
+        with patch('stagesetting.utils._get_files_in_static_storage') as is_called:
+            for x in range(0, 6):
+                list_files_in_static()
+            is_called.assert_called_once_with(only_matching=None)
+
+
 def test_list_files_in_default_storage():
     found = tuple(list_files_in_default_storage())
     found2 = tuple(list_files_in_default_storage())
@@ -450,6 +472,14 @@ def test_list_files_in_default_storage_partial():
     assert found[0][1] == (('static/file_found_1.txt', 'file_found_1.txt'),
                            ('static/subdir/file_found_2.txt', 'subdir/file_found_2.txt'))
 
+
+def test_list_files_in_default_storage_cached():
+    # import pdb; pdb.set_trace()
+    with isolate_lru_cache(list_files_in_default_storage):
+        with patch('stagesetting.utils._get_files_in_default_storage') as is_called:
+            for x in range(0, 6):
+                list_files_in_default_storage()
+            is_called.assert_called_once_with()
 
 def test_get_htmlfield():
     lol = get_htmlfield(initial='woo')
