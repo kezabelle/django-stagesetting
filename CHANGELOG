@@ -5,7 +5,7 @@ Change log
 ^^^^^^
 
 * Admin now displays pretty names for the setting keys.
-* `StaticFilesChoiceField` and `DefaultStorageFilesChoiceField` now both use an
+* ``StaticFilesChoiceField`` and ``DefaultStorageFilesChoiceField`` now both use an
   LRU cache to avoid having to enumerate the storage backends/finders repeatedly.
 
 
