@@ -93,7 +93,7 @@ class UpdateSetting(FormView):
             has_add_permission=self.request.user.has_perm('stagesetting.has_add_permission'),
             show_save_and_continue=False,
             has_change_permission=self.request.user.has_perm('stagesetting.has_change_permission'),
-            title=string_concat(_("Change "), self.object.key),
+            title=string_concat(_("Change "), self.object.pretty_key()),
             original=self.object,
         )
         if self.admin:
@@ -166,7 +166,7 @@ class UpdateSetting(FormView):
                 }
             )
         msg_dict = {'name': force_text(self.object._meta.verbose_name),
-                    'obj': force_text(self.object.key)}
+                    'obj': force_text(self.object.pretty_key())}
         msg =  _('The %(name)s "%(obj)s" was changed successfully.') % msg_dict
         messages.success(self.request, msg)
         return super(UpdateSetting, self).form_valid(form=form)

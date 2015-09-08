@@ -539,3 +539,8 @@ def formstring_from_formclass(form):
             'initial': initial, 'widget_type': widget_type,
             'widget_module': widget_module,
         })
+
+
+def prettify_setting_name(value):
+    """ Convert `SETTING_NAME` to `Setting Name`"""
+    return value.replace('_', ' ').strip().title()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from functools import partial
 from django.forms import fields
 from django.contrib.admin import widgets as admin_widgets
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
@@ -14,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from .models import RuntimeSetting
 from stagesetting import widgets
 from stagesetting.utils import registry
+from stagesetting.utils import prettify_setting_name
 import warnings
 
 
@@ -26,11 +26,8 @@ class CreateSettingForm(Form):
         existing = frozenset(RuntimeSetting.objects.keys())
         possible = frozenset(registry.keys())
         creatable = possible - existing
-        def pretty_name(value):
-            return value.replace('_', ' ').strip().title()
-        final = list((x, pretty_name(x)) for x in sorted(creatable))
+        final = list((x, prettify_setting_name(x)) for x in sorted(creatable))
         self.fields['key'].widget = Select(choices=BLANK_CHOICE_DASH + final)
-
 
     def clean_key(self):
         key = self.cleaned_data['key']

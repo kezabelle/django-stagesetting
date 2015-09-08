@@ -14,8 +14,8 @@ from .views import DeleteSetting
 class RuntimeSettingAdmin(ModelAdmin):
     list_per_page = 500
     list_max_show_all = 500
-    list_display = ['key', 'created', 'modified', 'has_changed', 'history_link']
-    list_display_links = ['key']
+    list_display = ['pretty_key', 'created', 'modified', 'has_changed', 'history_link']
+    list_display_links = ['pretty_key']
     actions = None
 
     def history_link(self, obj):

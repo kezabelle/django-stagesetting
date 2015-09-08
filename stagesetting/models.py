@@ -11,6 +11,7 @@ from django.db.models import Model, TextField
 from django.db.models.fields import CharField
 from django.db.models.fields import DateTimeField
 from .utils import registry
+from .utils import prettify_setting_name
 from .validators import validate_setting_name
 
 
@@ -38,10 +39,14 @@ class RuntimeSetting(Model):
     created = DateTimeField(auto_now_add=True)
     modified = DateTimeField(auto_now=True)
 
-    objects = Manager.from_queryset(RuntimeSettingQuerySet)()
+    objects = RuntimeSettingQuerySet.as_manager()
 
     def __str__(self):
         return self.key
+
+    def pretty_key(self):
+        return prettify_setting_name(self.key)
+    pretty_key.short_description = _("Name")
 
     def get_form_class(self):
         return registry[self.key]
