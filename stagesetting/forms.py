@@ -12,8 +12,8 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 from .models import RuntimeSetting
 from stagesetting import widgets
-from stagesetting.utils import registry
-from stagesetting.utils import prettify_setting_name
+from .utils import registry
+from .utils import prettify_setting_name
 import warnings
 
 
