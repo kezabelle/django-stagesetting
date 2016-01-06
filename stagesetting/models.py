@@ -101,9 +101,10 @@ class RuntimeSetting(Model):
 
 @python_2_unicode_compatible
 class RuntimeSettingWrapper(object):
-    __slots__ = ('settings', '_lock')
-    def __init__(self, settings=None):
+    __slots__ = ('settings', '_lock', 'model')
+    def __init__(self, settings=None, model=RuntimeSetting):
         super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
+        super(RuntimeSettingWrapper, self).__setattr__('model', model)
         super(RuntimeSettingWrapper, self).__setattr__('_lock', RLock())
 
     def __str__(self):
@@ -136,7 +137,7 @@ class RuntimeSettingWrapper(object):
 
             # Set up anything that's been configured into the database.
             keys = frozenset(registry._registry.keys())
-            for setting in RuntimeSetting.objects.known(keys).iterator():  # noqa
+            for setting in self.model.objects.known(keys).iterator():  # noqa
                 try:
                     # this may trigger further database hits for FK fields
                     # (modelchoice, modelmultiplechoice)
