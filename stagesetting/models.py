@@ -31,7 +31,7 @@ class RuntimeSettingQuerySet(QuerySet):
 
 
 @python_2_unicode_compatible
-class RuntimeSetting(Model):
+class BaseRuntimeSetting(Model):
     key = CharField(max_length=MEMCACHE_MAX_KEY_LENGTH, unique=True,
                     db_index=True, validators=[validate_setting_name],
                     verbose_name=_("Name"))
@@ -97,6 +97,15 @@ class RuntimeSetting(Model):
         ordering = ('key',)
         verbose_name = _("Setting")
         verbose_name_plural = _("Settings")
+        abstract = True
+
+
+class RuntimeSetting(BaseRuntimeSetting):
+    """
+    Concrete class for default
+    """
+    class Meta(BaseRuntimeSetting.Meta):
+        abstract = False
 
 
 @python_2_unicode_compatible
