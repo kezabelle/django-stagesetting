@@ -14,10 +14,13 @@ class StageSettingAppConfig(AppConfig):
     name = 'stagesetting'
     verbose_name = _("Run configuration")
 
-    def ready(self):
+    def get_stagesetting_model(self):
         from .models import RuntimeSetting
+        return RuntimeSetting
+
+    def ready(self):
         from .checks import check_setting
         from .utils import registry as stagesetting_registry
         django_check_registry.register(check_setting)
         stagesetting_registry.ready(sender=self.__class__, instance=self,
-                                        model=RuntimeSetting)
+                                        model=self.get_stagesetting_model())
