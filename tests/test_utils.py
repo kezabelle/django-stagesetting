@@ -23,7 +23,11 @@ from django.contrib.auth import get_user_model
 from django.test import TransactionTestCase
 from django.test.utils import override_settings, patch_logger
 from django.utils.timezone import utc
-from django_bleach.forms import BleachField
+try:
+    from django_bleach.forms import BleachField
+    CAN_BLEACH = True
+except ImportError:  # could either not be installed, or too new a Django (1.9+)
+    CAN_BLEACH = False
 import pytest
 from stagesetting.models import RuntimeSetting
 from stagesetting.utils import (JSONEncoder, FormRegistry, generate_form,
@@ -484,6 +488,8 @@ def test_list_files_in_default_storage_cached():
                 list_files_in_default_storage()
             is_called.assert_called_once_with()
 
+
+@pytest.mark.skipif(CAN_BLEACH is False, reason="Import error loading BleachField")
 def test_get_htmlfield():
     lol = get_htmlfield(initial='woo')
     assert isinstance(lol, fields.CharField) is True
