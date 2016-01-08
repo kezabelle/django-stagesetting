@@ -128,7 +128,7 @@ following translations will be applied:
 - ``float`` becomes `FloatField`_
 - ``True`` or ``False`` become `BooleanField`_
 - ``int`` becomes `IntegerField`_
-- ``uuid.UUID`` becomes `UUIDField`_ or `CharField`_, depending on the `Django`_ version
+- ``uuid.UUID`` becomes `UUIDField`_ or `RegexField`_, depending on the `Django`_ version
 - ``list`` and ``tuple`` become `MultipleChoiceField`_
 - ``collections.OrderedDict``, ``set``, ``frozenset``, and ``dict`` become `ChoiceField`_
 - ``models.Model`` instances become `ModelChoiceField`_
@@ -140,6 +140,12 @@ following translations will be applied:
   - `EmailField`_
   - `SlugField`_
   - `CharField`_
+  - `IntegerField`_
+  - `DecimalField`_
+  - `UUIDField`_ (or `RegexField`_, depending on the `Django`_ version)
+  - `DateTimeField`_
+  - `DateField`_
+  - `TimeField`_
 - Some strings are **really** special, and will instead turn into one of the following:
 
   - if the string == ``STATIC_URL`` or ``STATICFILES_STORAGE`` the field will be
@@ -232,6 +238,7 @@ way:
 .. _pytest: http://pytest.org/latest/
 .. _BooleanField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#booleanfield
 .. _CharField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#charfield
+.. _RegexField:: https://docs.djangoproject.com/en/stable/ref/forms/fields/#regexfield
 .. _ChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#choicefield
 .. _DateField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datefield
 .. _DateTimeField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datetimefield

@@ -9,7 +9,7 @@ from django.forms import TypedChoiceField
 import re
 from collections import namedtuple, OrderedDict
 from datetime import datetime, timedelta, date, time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from itertools import chain, groupby
 import json
 import logging
@@ -388,6 +388,9 @@ def get_htmlfield(**kwargs):
     return HTMLField(**kwargs)
 
 
+uuid_re = re.compile(r'^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}|[a-fA-F0-9]{32}$')
+
+
 def _select_field(v):
     if callable(v):
         v = v()
@@ -416,7 +419,7 @@ def _select_field(v):
             logger.error("You're on an older version of Django which doesn't "
                          "have UUIDField, so a charfield is being used "
                          "instead", exc_info=1)
-            return forms.CharField(initial=str(v))
+            return forms.RegexField(regex=uuid_re, initial=str(v), max_length=36)
     elif isinstance(v, (list, tuple)):
         choices = tuple((k, k) for k in v)
         return forms.MultipleChoiceField(choices=choices)
@@ -454,6 +457,46 @@ def _select_field(v):
             return forms.EmailField(initial=v)
         except ValidationError:
             pass
+        # cast integerlike strings as such.
+        if v.isdigit():
+            v = int(v)
+            return forms.IntegerField(initial=v)
+        try:
+            v = Decimal(v)
+            return forms.DecimalField(initial=v)
+        except InvalidOperation:
+            pass
+        # allow 'ffffffff-ffff-ffff-ffff-ffffffffffff' to do the right thing.
+        try:
+            UUID(v)
+        except ValueError:
+            pass
+        else:
+            try:
+                return forms.UUIDField(initial=v)
+            except AttributeError:
+                logger.error("You're on an older version of Django which doesn't "
+                             "have UUIDField, so a charfield is being used "
+                             "instead", exc_info=1)
+                return forms.RegexField(regex=uuid_re, initial=str(v), max_length=36)
+
+        def can_be_parsed_as_temporal(value, field):
+            for format in field.input_formats:
+                try:
+                    field.strptime(value, format)
+                    return True
+                except (ValueError, TypeError):
+                    continue
+            return False
+
+        if can_be_parsed_as_temporal(v, forms.TimeField()):
+            return forms.TimeField(initial=v)
+
+        if can_be_parsed_as_temporal(v, forms.DateField()):
+            return forms.DateField(initial=v)
+
+        if can_be_parsed_as_temporal(v, forms.DateTimeField()):
+            return forms.DateTimeField(initial=v)
 
         if v in (settings.STATIC_URL, settings.STATICFILES_STORAGE):
             return StaticFilesChoiceField()

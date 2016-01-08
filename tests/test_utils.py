@@ -670,6 +670,29 @@ def test_generate_form_slugish_string_becomes_slugfield():
     assert isinstance(form.fields['field'], fields.SlugField) is True
 
 
+def test_generate_form_decimalish_string_becomes_decimalfield():
+    form = generate_form({'field': '1.0'})()
+    assert isinstance(form.fields['field'], fields.DecimalField) is True
+
+
+def test_generate_form_datetimeish_string_becomes_datetimefield():
+    form = generate_form({'field': '01/01/2016 01:01:01'})()
+    assert isinstance(form.fields['field'], fields.DateTimeField) is True
+
+def test_generate_form_dateish_string_becomes_datefield():
+    form = generate_form({'field': '01/01/2016'})()
+    assert isinstance(form.fields['field'], fields.DateField) is True
+
+def test_generate_form_timeish_string_becomes_timefield():
+    form = generate_form({'field': '01:01:01'})()
+    assert isinstance(form.fields['field'], fields.TimeField) is True
+
+
+def test_generate_form_intish_string_becomes_integerfield():
+    form = generate_form({'field': '1'})()
+    assert isinstance(form.fields['field'], fields.IntegerField) is True
+
+
 def test_generate_form_slugish_string_has_invalid_slug_chars_slugfield():
     form = generate_form({'field': 'a-b!!!'})()
     assert isinstance(form.fields['field'], fields.SlugField) is False
