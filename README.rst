@@ -238,7 +238,7 @@ way:
 .. _pytest: http://pytest.org/latest/
 .. _BooleanField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#booleanfield
 .. _CharField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#charfield
-.. _RegexField:: https://docs.djangoproject.com/en/stable/ref/forms/fields/#regexfield
+.. _RegexField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#regexfield
 .. _ChoiceField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#choicefield
 .. _DateField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datefield
 .. _DateTimeField: https://docs.djangoproject.com/en/stable/ref/forms/fields/#datetimefield
