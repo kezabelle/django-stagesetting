@@ -33,23 +33,25 @@ def request_passes_test(request, obj=None):
 
 
 class CreateSetting(FormView):
-    form_class = CreateSettingForm
+    form_class = None
     template_name = 'stagesetting/create.html'
     success_url_name = 'stagesetting_update'
     admin = False
+    model = None
 
     def get_context_data(self, **kwargs):
         ctx = super(CreateSetting, self).get_context_data(**kwargs)
+        app_label = self.model._meta.app_label
         ctx.update(
-            opts=RuntimeSetting._meta,
+            opts=self.model._meta,
             change=False,
             is_popup=(IS_POPUP_VAR in self.request.POST or
                       IS_POPUP_VAR in self.request.GET),
             save_as=False,
-            has_delete_permission=self.request.user.has_perm('stagesetting.has_delete_permission'),
-            has_add_permission=self.request.user.has_perm('stagesetting.has_add_permission'),
+            has_delete_permission=self.request.user.has_perm('%s.has_delete_permission' % app_label),
+            has_add_permission=self.request.user.has_perm('%s.has_add_permission' % app_label),
             show_save_and_continue=False,
-            has_change_permission=self.request.user.has_perm('stagesetting.has_change_permission'),
+            has_change_permission=self.request.user.has_perm('%s.has_change_permission' % app_label),
             title=_("Add new setting"),
             add=True,
         )
@@ -79,20 +81,22 @@ class UpdateSetting(FormView):
     template_name = 'stagesetting/update.html'
     success_url = reverse_lazy('stagesetting_list')
     admin = None
+    model = None
 
     def get_context_data(self, **kwargs):
         ctx = super(UpdateSetting, self).get_context_data(**kwargs)
+        app_label = self.model._meta.app_label
         ctx.update(
-            opts=RuntimeSetting._meta,
+            opts=self.model._meta,
             add=False,
             change=True,
             is_popup=(IS_POPUP_VAR in self.request.POST or
                       IS_POPUP_VAR in self.request.GET),
             save_as=False,
-            has_delete_permission=self.request.user.has_perm('stagesetting.has_delete_permission'),
-            has_add_permission=self.request.user.has_perm('stagesetting.has_add_permission'),
+            has_delete_permission=self.request.user.has_perm('%s.has_delete_permission' % app_label),
+            has_add_permission=self.request.user.has_perm('%s.has_add_permission' % app_label),
             show_save_and_continue=False,
-            has_change_permission=self.request.user.has_perm('stagesetting.has_change_permission'),
+            has_change_permission=self.request.user.has_perm('%s.has_change_permission' % app_label),
             title=string_concat(_("Change "), self.object.pretty_key()),
             original=self.object,
         )
@@ -125,7 +129,7 @@ class UpdateSetting(FormView):
         return request_passes_test(request=request, obj=obj)
 
     def get_object(self, *args, **kwargs):
-        return get_object_or_404(RuntimeSetting, pk=self.kwargs.get('pk'))
+        return get_object_or_404(self.model.objects.all(), pk=self.kwargs.get('pk'))
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -173,7 +177,6 @@ class UpdateSetting(FormView):
 
 
 class DeleteSetting(DeleteView):
-    queryset = RuntimeSetting.objects.all()
     template_name = 'stagesetting/delete.html'
     admin = False
     success_url = reverse_lazy('stagesetting_list')
@@ -184,7 +187,7 @@ class DeleteSetting(DeleteView):
     def get_context_data(self, **kwargs):
         ctx = super(DeleteSetting, self).get_context_data(**kwargs)
         ctx.update(
-            opts=RuntimeSetting._meta,
+            opts=self.object._meta,
             original=self.object,
         )
         return ctx
@@ -204,7 +207,6 @@ class DeleteSetting(DeleteView):
 
 
 class ListSettings(ListView):
-    queryset = RuntimeSetting.objects.all()
     paginate_by = 20
     template_name = 'stagesetting/list.html'
     admin = False
@@ -217,7 +219,7 @@ class ListSettings(ListView):
         return super(ListSettings, self).get(request, *args, **kwargs)
 
 
-create_view = CreateSetting.as_view()
-delete_view = DeleteSetting.as_view()
-update_view = UpdateSetting.as_view()
-list_view = ListSettings.as_view()
+create_view = CreateSetting.as_view(model=RuntimeSetting)
+delete_view = DeleteSetting.as_view(queryset=RuntimeSetting.objects.all())
+update_view = UpdateSetting.as_view(model=RuntimeSetting)
+list_view = ListSettings.as_view(queryset=RuntimeSetting.objects.all())

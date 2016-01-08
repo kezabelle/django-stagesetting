@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from django.contrib import admin
 from django.contrib.admin import ModelAdmin
+from django.contrib.admin.templatetags.admin_urls import admin_urlname
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from .models import RuntimeSetting
+from .forms import CreateSettingForm
 from .views import CreateSetting
 from .views import UpdateSetting
 from .views import DeleteSetting
@@ -19,7 +19,8 @@ class RuntimeSettingAdmin(ModelAdmin):
     actions = None
 
     def history_link(self, obj):
-        url = reverse('admin:stagesetting_runtimesetting_history', args=(obj.pk,))  # noqa
+        url = admin_urlname(obj._meta, 'history')
+        url = reverse(url, args=(obj.pk,))  # noqa
         return '<a href="%(url)s" class="historylink">%(label)s</a>' % {
             'url': url, 'label': _("History")
         }
@@ -27,17 +28,19 @@ class RuntimeSettingAdmin(ModelAdmin):
     history_link.allow_tags = True
 
     def add_view(self, request, **kwargs):
-        return CreateSetting.as_view(
+        url = admin_urlname(self.model._meta, 'change')
+        return CreateSetting.as_view(model=self.model, form_class=CreateSettingForm,
             admin=self, template_name='admin/stagesetting/add_form.html',
-            success_url_name='admin:stagesetting_runtimesetting_change')(request=request)
+            success_url_name=url)(request=request)
 
     def change_view(self, request, object_id, **kwargs):
-        return UpdateSetting.as_view(
+        url = admin_urlname(self.model._meta, 'changelist')
+        return UpdateSetting.as_view(model=self.model,
             admin=self, template_name='admin/stagesetting/change_form.html',
-            success_url=reverse('admin:stagesetting_runtimesetting_changelist'))(request=request, pk=object_id)
+            success_url=reverse(url))(request=request, pk=object_id)
 
     def delete_view(self, request, object_id, **kwargs):
-        return DeleteSetting.as_view(
+        url = admin_urlname(self.model._meta, 'changelist')
+        return DeleteSetting.as_view(queryset=self.model.objects.all(),
             admin=self, template_name='admin/delete_confirmation.html',
-            success_url=reverse('admin:stagesetting_runtimesetting_changelist'))(request=request, pk=object_id)
-admin.site.register(RuntimeSetting, RuntimeSettingAdmin)
+            success_url=reverse(url))(request=request, pk=object_id)
