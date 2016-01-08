@@ -3,7 +3,6 @@ from __future__ import absolute_import
 from threading import RLock
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
-from django.db.models.manager import Manager
 from django.db.models.query import QuerySet
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
@@ -32,9 +31,6 @@ class RuntimeSettingQuerySet(QuerySet):
 
 @python_2_unicode_compatible
 class BaseRuntimeSetting(Model):
-    key = CharField(max_length=MEMCACHE_MAX_KEY_LENGTH, unique=True,
-                    db_index=True, validators=[validate_setting_name],
-                    verbose_name=_("Name"))
     raw_value = TextField()
     created = DateTimeField(auto_now_add=True)
     modified = DateTimeField(auto_now=True)
@@ -104,6 +100,10 @@ class RuntimeSetting(BaseRuntimeSetting):
     """
     Concrete class for default
     """
+    key = CharField(max_length=MEMCACHE_MAX_KEY_LENGTH, unique=True,
+                    db_index=True, validators=[validate_setting_name],
+                    verbose_name=_("Name"))
+
     class Meta(BaseRuntimeSetting.Meta):
         abstract = False
         app_label = "stagesetting"
