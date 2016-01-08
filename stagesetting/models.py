@@ -106,6 +106,8 @@ class RuntimeSetting(BaseRuntimeSetting):
     """
     class Meta(BaseRuntimeSetting.Meta):
         abstract = False
+        app_label = "stagesetting"
+        db_table = "stagesetting_runtimesetting"
 
 
 @python_2_unicode_compatible

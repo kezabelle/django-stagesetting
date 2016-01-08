@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ('key',),
+                'db_table': 'stagesetting_runtimesetting',
                 'verbose_name': 'Setting',
                 'verbose_name_plural': 'Settings',
             },
