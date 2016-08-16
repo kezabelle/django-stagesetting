@@ -217,7 +217,8 @@ Alternatives
 ------------
 
 Other apps I know of that achieve similar things, or overlap in some obvious
-way:
+way. I won't judge you for using them, and I can't promise this is better.
+To the victor, the spoils of maintenance!
 
 - `django-constance`_ is similar
 
@@ -226,7 +227,13 @@ way:
     the JSON back into python values.
   - Has both database and redis backends; ``stagesetting`` only supports
     the database, though it will only do one query most of the time.
+    
+- `django-dynamic-preferences`_ by the look of it.
+- `django-solo`_ as well.
 
+If you think GitHub popularity is an indication of usage and battle-tested 
+production-readiness, then any of the above are certainly worth considering, 
+being much more noticed than this, my attempt.
 
 .. _Django: https://docs.djangoproject.com/en/stable/
 .. _admin site: https://docs.djangoproject.com/en/stable/ref/contrib/admin/
@@ -263,3 +270,5 @@ way:
 .. _django-pagedown: https://github.com/timmyomahony/django-pagedown
 .. _django-epiceditor: https://github.com/barraq/django-epiceditor
 .. _django-constance: https://github.com/jezdez/django-constance
+.. _django-dynamic-preferences: https://github.com/EliotBerriot/django-dynamic-preferences
+.. _django-solo: https://github.com/lazybird/django-solo
