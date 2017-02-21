@@ -1,4 +1,5 @@
 language: python
+python: 3.5
 
 sudo: false
 
@@ -15,12 +16,26 @@ cache:
 env:
  - TOX_ENV=py27-django17
  - TOX_ENV=py27-django18
+ - TOX_ENV=py27-django19
+ - TOX_ENV=py27-django110
+ - TOX_ENV=py27-django111
  - TOX_ENV=py33-django17
  - TOX_ENV=py33-django18
- - TOX_ENV=py34-django17
+ - TOX_ENV=py33-django19
+ - TOX_ENV=py33-django110
  - TOX_ENV=py34-django18
+ - TOX_ENV=py34-django19
+ - TOX_ENV=py34-django110
+ - TOX_ENV=py34-django111
+ - TOX_ENV=py35-django18
+ - TOX_ENV=py35-django19
+ - TOX_ENV=py35-django110
+ - TOX_ENV=py35-django111
  - TOX_ENV=pypy-django17
  - TOX_ENV=pypy-django18
+ - TOX_ENV=pypy-django19
+ - TOX_ENV=pypy-django110
+ - TOX_ENV=pypy-django111
 
 script:
   - tox -e $TOX_ENV
