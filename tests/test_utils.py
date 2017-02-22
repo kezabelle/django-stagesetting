@@ -317,7 +317,7 @@ def test_generate_form():
         'static_url': settings.STATIC_URL,
         'static_storage': settings.STATICFILES_STORAGE,
         'partial_static_url': r'%sadmin/(.+)\.css' % settings.STATIC_URL,
-        'partial_static_url2': r'^%sadmin/(.+)\.css|\.txt' % settings.STATIC_URL,
+        'partial_static_url2': r'^%sadmin/(.+)\.css|\.js' % settings.STATIC_URL,
     }
     form_class = generate_form(data)
     uuid = uuid4()
@@ -349,7 +349,7 @@ def test_generate_form():
         'static_url': 'admin/css/login.css',
         'static_storage': 'admin/css/login.css',
         'partial_static_url': 'admin/css/login.css',
-        'partial_static_url2': 'admin/js/LICENSE-JQUERY.txt',
+        'partial_static_url2': 'admin/js/core.js',
     }
     form = form_class(data=validate_data)
     valid = form.is_valid()
@@ -380,7 +380,7 @@ def test_generate_form():
         'static_url': 'admin/css/login.css',
         'static_storage': 'admin/css/login.css',
         'partial_static_url': 'admin/css/login.css',
-        'partial_static_url2': 'admin/js/LICENSE-JQUERY.txt',
+        'partial_static_url2': 'admin/js/core.js',
     }
     assert valid is True
 
@@ -419,19 +419,18 @@ def test_list_files_in_static():
     assert found == found2
     assert len(found) == 1
     assert found[0][0] == 'admin'
-    assert ('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt') in found[0][1]
+    assert ('admin/js/core.js', 'js/core.js') in found[0][1]
     assert ('admin/css/changelists.css', 'css/changelists.css') in found[0][1]
 
 
 def test_list_files_in_static_partial():
-    found = tuple(list_files_in_static(only_matching='\.txt$'))
-    found2 = tuple(list_files_in_static(only_matching='\.txt$'))
+    found = sorted(list_files_in_static(only_matching='\.js$'))
+    found2 = sorted(list_files_in_static(only_matching='\.js$'))
     # make sure they're the same.
     assert found == found2
     assert len(found) == 1
     assert found[0][0] == 'admin'
-    assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
-
+    assert ('admin/js/core.js', 'js/core.js') in found[0][1]
 
 
 @contextmanager
@@ -501,15 +500,15 @@ def test_static_files_choice_field():
     field = StaticFilesChoiceField()
     found = tuple(field.choices)
     assert found[0][0] == 'admin'
-    assert ('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt') in found[0][1]
+    assert ('admin/js/core.js', 'js/core.js') in found[0][1]
     assert ('admin/css/changelists.css', 'css/changelists.css') in found[0][1]
 
 
 def test_partial_static_files_choice_field():
-    field = PartialStaticFilesChoiceField(only_matching='\.txt$')
+    field = PartialStaticFilesChoiceField(only_matching='\.js$')
     found = tuple(field.choices)
     assert found[0][0] == 'admin'
-    assert found[0][1] == (('admin/js/LICENSE-JQUERY.txt', 'js/LICENSE-JQUERY.txt'),)
+    assert ('admin/js/core.js', 'js/core.js')in found[0][1]
 
 
 def test_default_storage_files_choice_field():
