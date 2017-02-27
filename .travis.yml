@@ -14,19 +14,19 @@ cache:
     - $HOME/.cache/pip
 
 env:
-  - TOX_ENV=py27-dj18
-  - TOX_ENV=py27-dj19
-  - TOX_ENV=py27-dj110
-  - TOX_ENV=py27-dj111
-  - TOX_ENV=py33-dj18
-  - TOX_ENV=py34-dj18
-  - TOX_ENV=py34-dj19
-  - TOX_ENV=py34-dj110
-  - TOX_ENV=py34-dj111
-  - TOX_ENV=py35-dj18
-  - TOX_ENV=py35-dj19
-  - TOX_ENV=py35-dj110
-  - TOX_ENV=py35-dj111
+  - TOX_ENV=py27-django18
+  - TOX_ENV=py27-django19
+  - TOX_ENV=py27-django110
+  - TOX_ENV=py27-django111
+  - TOX_ENV=py33-django18
+  - TOX_ENV=py34-django18
+  - TOX_ENV=py34-django19
+  - TOX_ENV=py34-django110
+  - TOX_ENV=py34-django111
+  - TOX_ENV=py35-django18
+  - TOX_ENV=py35-django19
+  - TOX_ENV=py35-django110
+  - TOX_ENV=py35-django111
   - TOX_ENV=pypy-django18
   - TOX_ENV=pypy-django19
   - TOX_ENV=pypy-django110
