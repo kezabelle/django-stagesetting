@@ -22,8 +22,8 @@ Pre-requisites
 
 The following versions are tested:
 
-* Python 2.7, 3.3, or 3.4
-* `Django`_ 1.7 or 1.8
+* Python 2.7, or 3.3+
+* `Django`_ 1.7+
 
 Installation
 ------------
