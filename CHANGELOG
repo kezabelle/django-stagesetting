@@ -1,7 +1,6 @@
 Change log
 ----------
-
-?next?
+0.5.0
 ^^^^^^
 * Minor changes to allow for easy subclassing or replacement of the middleware,
   context processor etc.
