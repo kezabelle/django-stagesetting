@@ -8,6 +8,23 @@ import os
 
 HERE = os.path.realpath(os.path.dirname(__file__))
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+)
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'OPTIONS': {
+            'context_processors': TEMPLATE_CONTEXT_PROCESSORS,
+            'loaders': TEMPLATE_LOADERS,
+        },
+    },
+]
 
 def pytest_configure():
     if not settings.configured:
@@ -49,6 +66,10 @@ def pytest_configure():
             PASSWORD_HASHERS=(
                 'django.contrib.auth.hashers.MD5PasswordHasher',
             ),
+			TEMPLATE_CONTEXT_PROCESSORS=TEMPLATE_CONTEXT_PROCESSORS,
+			TEMPLATE_LOADERS=TEMPLATE_LOADERS,
+			TEMPLATES=TEMPLATES,
+            SILENCED_SYSTEM_CHECKS = ['1_8.W001'],
         )
     if hasattr(django, 'setup'):
         django.setup()
