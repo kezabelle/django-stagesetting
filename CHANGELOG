@@ -1,5 +1,13 @@
 Change log
 ----------
+
+?next?
+^^^^^^
+* Minor changes to allow for easy subclassing or replacement of the middleware,
+  context processor etc.
+* Updated test matrix to cover more versions of Django (1.9+)
+
+
 0.4.2
 ^^^^^^
 
