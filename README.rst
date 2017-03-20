@@ -230,6 +230,8 @@ To the victor, the spoils of maintenance!
     
 - `django-dynamic-preferences`_ by the look of it.
 - `django-solo`_ as well.
+- `django-djconfig`_ looks similar in principle, insofar as it uses forms?
+- `django-aboutconfig`_ maybe?
 
 If you think GitHub popularity is an indication of usage and battle-tested 
 production-readiness, then any of the above are certainly worth considering, 
@@ -272,3 +274,5 @@ being much more noticed than this, my attempt.
 .. _django-constance: https://github.com/jezdez/django-constance
 .. _django-dynamic-preferences: https://github.com/EliotBerriot/django-dynamic-preferences
 .. _django-solo: https://github.com/lazybird/django-solo
+.. _django-djconfig: https://github.com/nitely/django-djconfig
+.. _django-aboutconfig: https://bitbucket.org/impala/django-aboutconfig
