@@ -28,6 +28,15 @@ class RuntimeSettingQuerySet(QuerySet):
             raise self.model.DoesNotExist("Invalid setting name")
         return self.filter(key=key).exists()
 
+    if not hasattr(QuerySet, 'as_manager'):
+        @classmethod
+        def as_manager(cls):
+            from django.db.models import Manager
+            class RuntimeSettingManager(Manager):
+                def get_query_set(self):
+                    return cls(self.model, using=self._db)
+            return RuntimeSettingManager()
+
 
 @python_2_unicode_compatible
 class BaseRuntimeSetting(Model):

@@ -2,8 +2,17 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
-from django.utils.text import slugify
-from django.utils.lru_cache import lru_cache
+try:
+    from django.utils.text import slugify
+except ImportError:  # Django 1.4LTS
+    from django.template.defaultfilters import slugify
+try:
+    from django.utils.lru_cache import lru_cache
+except ImportError:
+    def lru_cache(*args, **kwargs):
+        def wrapped_function(user_function):
+            return user_function
+        return wrapped_function
 from functools import partial
 from django.forms import TypedChoiceField
 import re
@@ -24,11 +33,19 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import (validate_ipv46_address, URLValidator,
                                     validate_email)
-from django.db.models import QuerySet, Model
+from django.db.models import Model
+from django.db.models.query import QuerySet
 from django import forms
 from django.utils.encoding import force_text
 from django.utils.encoding import python_2_unicode_compatible
-from django.utils.module_loading import import_string
+try:
+    from django.utils.module_loading import import_string
+except ImportError:  # Django 1.4LTS
+    from django.utils.importlib import import_module
+    def import_string(dotted_path):
+        module_path, class_name = dotted_path.rsplit('.', 1)
+        module = import_module(module_path)
+        return getattr(module, class_name)
 from django.utils.six import string_types, integer_types
 from .validators import validate_setting_name, validate_default
 from .validators import validate_formish

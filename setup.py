@@ -45,7 +45,7 @@ setup(
     version='0.5.0',
     packages=find_packages(exclude=['tests', 'test_app']),
     install_requires=(
-        'Django>=1.7',
+        'Django>=1.4',
     ),
     tests_require=(
         'pytest>=2.6.4',
