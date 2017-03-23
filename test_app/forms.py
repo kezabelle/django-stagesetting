@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from django.contrib.auth import get_user_model
+try:
+    from django.contrib.auth import get_user_model
+except ImportError:
+    from django.contrib.auth.models import User
+    def get_user_model(): return User
 from django.core.exceptions import ValidationError
 from django.forms import Form, DateTimeField, IntegerField, ModelChoiceField, \
     ModelMultipleChoiceField

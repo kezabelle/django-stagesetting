@@ -3,10 +3,9 @@ from __future__ import absolute_import
 from threading import RLock
 from django.core.cache.backends.base import MEMCACHE_MAX_KEY_LENGTH
 from django.core.exceptions import ValidationError
-from django.db.models.query import QuerySet
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Model, TextField
+from django.db.models import Model, Manager, TextField
 from django.db.models.fields import CharField
 from django.db.models.fields import DateTimeField
 from .utils import registry
@@ -14,7 +13,7 @@ from .utils import prettify_setting_name
 from .validators import validate_setting_name
 
 
-class RuntimeSettingQuerySet(QuerySet):
+class RuntimeSettingManager(Manager):
     def keys(self):
         return self.values_list('key', flat=True)
 
@@ -28,15 +27,6 @@ class RuntimeSettingQuerySet(QuerySet):
             raise self.model.DoesNotExist("Invalid setting name")
         return self.filter(key=key).exists()
 
-    if not hasattr(QuerySet, 'as_manager'):
-        @classmethod
-        def as_manager(cls):
-            from django.db.models import Manager
-            class RuntimeSettingManager(Manager):
-                def get_query_set(self):
-                    return cls(self.model, using=self._db)
-            return RuntimeSettingManager()
-
 
 @python_2_unicode_compatible
 class BaseRuntimeSetting(Model):
@@ -44,7 +34,7 @@ class BaseRuntimeSetting(Model):
     created = DateTimeField(auto_now_add=True)
     modified = DateTimeField(auto_now=True)
 
-    objects = RuntimeSettingQuerySet.as_manager()
+    objects = RuntimeSettingManager()
 
     def __str__(self):
         return self.key

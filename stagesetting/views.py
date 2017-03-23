@@ -4,8 +4,17 @@ from __future__ import unicode_literals
 import logging
 from django.contrib import messages
 from django.contrib.admin.models import LogEntry, CHANGE
-from django.contrib.admin.options import IS_POPUP_VAR
-from django.contrib.admin.options import get_content_type_for_model
+try:
+    from django.contrib.admin.options import IS_POPUP_VAR
+except ImportError:
+    from django.contrib.admin.views.main import IS_POPUP_VAR
+try:
+    from django.contrib.admin.options import get_content_type_for_model
+except ImportError:
+    def get_content_type_for_model(obj):
+        from django.contrib.contenttypes.models import ContentType
+        return ContentType.objects.get_for_model(obj, for_concrete_model=False)
+
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction

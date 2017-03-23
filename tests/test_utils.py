@@ -19,9 +19,17 @@ from django.forms import fields, ModelChoiceField, ModelMultipleChoiceField
 from django.utils.functional import empty
 import re
 import django
-from django.contrib.auth import get_user_model
+try:
+    from django.contrib.auth import get_user_model
+except ImportError:
+    from django.contrib.auth.models import User
+    def get_user_model(): return User
 from django.test import TransactionTestCase
-from django.test.utils import override_settings, patch_logger
+from django.test.utils import override_settings
+try:
+    from django.test.utils import patch_logger
+except ImportError:
+    from ._compat import patch_logger
 from django.utils.timezone import utc
 try:
     from django_bleach.forms import BleachField

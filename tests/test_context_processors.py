@@ -4,7 +4,10 @@ from __future__ import unicode_literals
 import contextlib
 from django.forms import Form, IntegerField
 from django.test import TransactionTestCase, RequestFactory
-from django.test.utils import patch_logger
+try:
+    from django.test.utils import patch_logger
+except ImportError:
+    from ._compat import patch_logger
 from stagesetting.models import RuntimeSettingWrapper
 from stagesetting.context_processors import runtime_settings
 from stagesetting.middleware import ApplyRuntimeSettings

@@ -74,7 +74,7 @@ ADMINFORMFIELD_FOR_FORMFIELD_DEFAULTS = {
                        'widget_attrs': {'class': 'vLargeTextField'}},
     fields.ImageField: {'widget': admin_widgets.AdminFileWidget},
     fields.FileField: {'widget': admin_widgets.AdminFileWidget},
-    fields.EmailField: {'widget': admin_widgets.AdminEmailInputWidget},
+    fields.EmailField: {'widget': getattr(admin_widgets, 'AdminEmailInputWidget', admin_widgets.AdminTextInputWidget)},
     # ModelMultipleChoiceField: {'widget': partial(widgets.FilteredSelectMultiple, verbose_name='hello', is_stacked=False)}
 }
 

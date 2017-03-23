@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from django.test import override_settings
+
+import pytest
+import django
+pytest.importorskip('django.core.checks')
+
+from django.test.utils import override_settings
 from stagesetting.checks import check_setting
 from stagesetting.checks import W001, E001, E003, E002, E004, E006, E007, E005, I001
 

@@ -3,7 +3,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import contextlib
 import json
-from django.contrib.auth import get_user_model
+try:
+    from django.contrib.auth import get_user_model
+except ImportError:
+    from django.contrib.auth.models import User
+    def get_user_model(): return User
 from django.forms import IntegerField, Form, ModelChoiceField, \
     ModelMultipleChoiceField
 import pytest
