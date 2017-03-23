@@ -53,7 +53,7 @@ class BaseRuntimeSetting(Model):
     def get_value(self):
         form = self.get_form()
         form.full_clean()
-        return form.cleaned_data
+        return getattr(form, 'cleaned_data', {})
 
     def set_value(self, value):
         form = self.get_form_class()(data=value, initial=value, files=None)
@@ -170,16 +170,17 @@ class RuntimeSettingWrapper(object):
                     # this may trigger further database hits for FK fields
                     # (modelchoice, modelmultiplechoice)
                     form.is_valid()
+                    cleaned_data = getattr(form, 'cleaned_data', {})
                     if key not in settings:
-                        settings[key] = form.cleaned_data
+                        settings[key] = cleaned_data
                     else:
                         # any keys which are in the form and are in the defaults
                         # may be added to the database-backed value so that stale
                         # database entries don't have missing data until the next
                         # time they're saved.
-                        for defaultkey in form.cleaned_data:
+                        for defaultkey in cleaned_data:
                             if defaultkey not in settings[key]:
-                                settings[key][defaultkey] = form.cleaned_data[defaultkey]
+                                settings[key][defaultkey] = cleaned_data[defaultkey]
             super(RuntimeSettingWrapper, self).__setattr__('settings', settings)
         return True
 

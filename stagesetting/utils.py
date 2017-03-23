@@ -9,10 +9,7 @@ except ImportError:  # Django 1.4LTS
 try:
     from django.utils.lru_cache import lru_cache
 except ImportError:
-    def lru_cache(*args, **kwargs):
-        def wrapped_function(user_function):
-            return user_function
-        return wrapped_function
+    from backports.functools_lru_cache import lru_cache
 from functools import partial
 from django.forms import TypedChoiceField
 import re

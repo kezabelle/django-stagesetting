@@ -19,8 +19,10 @@ def form(key):
     class ListPerPageForm(Form):
         count = IntegerField(initial=25, min_value=1, max_value=99)
     registry.register(key, ListPerPageForm, {'amdefault': None})
-    yield ListPerPageForm
-    registry.unregister(key)
+    try:
+        yield ListPerPageForm
+    finally:
+        registry.unregister(key)
 
 
 def test_runtime_settings_without_middleware(rf):
