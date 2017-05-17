@@ -7,28 +7,24 @@ from datetime import datetime, date, time
 import os
 import sys
 sys.dont_write_bytecode = True
-MISSING_DEPENDENCY = False
+MISSING_DEPENDENCIES = []
 try:
     from django.conf import settings
 except ImportError:
-    sys.stdout.write("You'll need to `pip install Django>=1.7` to run "
-                     "this demo\n")
-    MISSING_DEPENDENCY = True
+    MISSING_DEPENDENCIES.append("Django>=1.7")
 
 try:
     import debug_toolbar
 except ImportError:
-    sys.stdout.write("You'll need to `pip install django-debug-toolbar` to "
-                     "run this demo\n")
-    MISSING_DEPENDENCY = True
+    MISSING_DEPENDENCIES.append("django-debug-toolbar")
 try:
     import rest_framework
 except ImportError:
-    sys.stdout.write("You'll need to `pip install djangorestframework>=3.2` "
-                     "to run this demo\n")
-    MISSING_DEPENDENCY = True
+    MISSING_DEPENDENCIES.append("djangorestframework>=3.2")
 
-if MISSING_DEPENDENCY:
+if MISSING_DEPENDENCIES:
+    deps = " ".join(MISSING_DEPENDENCIES)
+    sys.stdout.write("You'll need to `pip install {}` to run this demo\n".format(deps))
     sys.exit(1)
 
 
@@ -59,6 +55,7 @@ settings.configure(
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
         'stagesetting.middleware.ApplyRuntimeSettings',
     ),
     DATABASES={
