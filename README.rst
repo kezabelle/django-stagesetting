@@ -232,6 +232,7 @@ To the victor, the spoils of maintenance!
 - `django-solo`_ as well.
 - `django-djconfig`_ looks similar in principle, insofar as it uses forms?
 - `django-aboutconfig`_ maybe?
+- `django-modelsettings`_ looks pretty similar - *define Django application settings with Django ORM models and edit them in the admin area.*
 
 If you think GitHub popularity is an indication of usage and battle-tested 
 production-readiness, then any of the above are certainly worth considering, 
@@ -276,3 +277,4 @@ being much more noticed than this, my attempt.
 .. _django-solo: https://github.com/lazybird/django-solo
 .. _django-djconfig: https://github.com/nitely/django-djconfig
 .. _django-aboutconfig: https://bitbucket.org/impala/django-aboutconfig
+.. _django-modelsettings: https://github.com/IlyaSemenov/django-modelsettings
