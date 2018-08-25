@@ -501,41 +501,51 @@ def _select_field(v):
         if can_be_parsed_as_temporal(v, forms.DateTimeField()):
             return forms.DateTimeField(initial=v)
 
-        if v in (settings.STATIC_URL, settings.STATICFILES_STORAGE):
+        if settings.STATIC_URL and v == settings.STATIC_URL:
             return StaticFilesChoiceField()
 
-        if v in (settings.MEDIA_URL, settings.DEFAULT_FILE_STORAGE):
+        if settings.STATICFILES_STORAGE and v == settings.STATICFILES_STORAGE:
+            return StaticFilesChoiceField()
+
+        if settings.MEDIA_URL and v == settings.MEDIA_URL:
             return DefaultStorageFilesChoiceField()
 
-        # filtered by a raw string representing a regex.
-        starts_with_static_url = v.startswith(settings.STATIC_URL)
-        if starts_with_static_url:
-            v = v[len(settings.STATIC_URL):]
-            return PartialStaticFilesChoiceField(only_matching=v)
+        if settings.DEFAULT_FILE_STORAGE and v == settings.DEFAULT_FILE_STORAGE:
+            return DefaultStorageFilesChoiceField()
 
-        # filtered by a raw string representing a regex.
-        starts_with_media_url = v.startswith(settings.MEDIA_URL)
-        if starts_with_media_url:
-            v = v[len(settings.MEDIA_URL):]
-            return PartialDefaultStorageFilesChoiceField(only_matching=v)
+        if settings.STATIC_URL:
+            # filtered by a raw string representing a regex.
+            starts_with_static_url = v.startswith(settings.STATIC_URL)
+            if starts_with_static_url:
+                v = v[len(settings.STATIC_URL):]
+                return PartialStaticFilesChoiceField(only_matching=v)
 
-        # filtered by a raw string representing a tethered regex.
-        starts_with_tethered_static_url = v.startswith('^%s' % settings.STATIC_URL)  # noqa
-        if starts_with_tethered_static_url:
-            # removes ^/static/ or whatever and instead tethers to the
-            # beginning of the next part.
-            # so ^/static/admin/.+$ should become ^/admin/.+$
-            v = '^%s' % v[len('^%s' % settings.STATIC_URL):]
-            return PartialStaticFilesChoiceField(only_matching=v)
+        if settings.MEDIA_URL:
+            # filtered by a raw string representing a regex.
+            starts_with_media_url = v.startswith(settings.MEDIA_URL)
+            if starts_with_media_url:
+                v = v[len(settings.MEDIA_URL):]
+                return PartialDefaultStorageFilesChoiceField(only_matching=v)
 
-        # filtered by a raw string representing a tethered regex.
-        starts_with_tethered_media_url = v.startswith('^%s' % settings.MEDIA_URL)  # noqa
-        if starts_with_tethered_media_url:
-            # removes ^/media/ or whatever and instead tethers to the
-            # beginning of the next part.
-            # so ^/media/admin/.+$ should become ^/admin/.+$
-            v = '^%s' % v[len('^%s' % settings.MEDIA_URL):]
-            return PartialDefaultStorageFilesChoiceField(only_matching=v)
+        if settings.STATIC_URL:
+            # filtered by a raw string representing a tethered regex.
+            starts_with_tethered_static_url = v.startswith('^%s' % settings.STATIC_URL)  # noqa
+            if starts_with_tethered_static_url:
+                # removes ^/static/ or whatever and instead tethers to the
+                # beginning of the next part.
+                # so ^/static/admin/.+$ should become ^/admin/.+$
+                v = '^%s' % v[len('^%s' % settings.STATIC_URL):]
+                return PartialStaticFilesChoiceField(only_matching=v)
+
+        if settings.MEDIA_URL:
+            # filtered by a raw string representing a tethered regex.
+            starts_with_tethered_media_url = v.startswith('^%s' % settings.MEDIA_URL)  # noqa
+            if starts_with_tethered_media_url:
+                # removes ^/media/ or whatever and instead tethers to the
+                # beginning of the next part.
+                # so ^/media/admin/.+$ should become ^/admin/.+$
+                v = '^%s' % v[len('^%s' % settings.MEDIA_URL):]
+                return PartialDefaultStorageFilesChoiceField(only_matching=v)
 
         if ' ' not in v and '-' in v and slugify(v) == v:
             return forms.SlugField(initial=v)
