@@ -3,7 +3,10 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.contrib.admin import ModelAdmin
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from .forms import CreateSettingForm
 from .views import CreateSetting

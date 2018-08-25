@@ -18,7 +18,10 @@ from uuid import UUID
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
 from django.core.files.storage import default_storage
-from django.core.urlresolvers import NoReverseMatch, reverse
+try:
+    from django.urls import NoReverseMatch, reverse
+except ImportError:
+    from django.core.urlresolvers import NoReverseMatch, reverse
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError

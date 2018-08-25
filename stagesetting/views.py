@@ -7,7 +7,10 @@ from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.options import get_content_type_for_model
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse, reverse_lazy
+try:
+    from django.urls import reverse, reverse_lazy
+except ImportError:
+    from django.core.urlresolvers import reverse, reverse_lazy
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
