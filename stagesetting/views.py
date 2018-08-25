@@ -28,8 +28,11 @@ logger = logging.getLogger(__name__)
 
 
 def request_passes_test(request, obj=None):
-    ok = (request.user.is_authenticated() and
-          request.user.is_active and request.user.is_staff)
+    try:
+        authed = request.user.is_authenticated()
+    except TypeError:
+        authed = request.user.is_authenticated
+    ok = authed and request.user.is_active and request.user.is_staff
     if not ok:
         raise PermissionDenied("User is anonymous, inactive or is not staff")
     return ok
