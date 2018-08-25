@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from django.contrib.admin import ModelAdmin
 from django.contrib.admin.templatetags.admin_urls import admin_urlname
+from stagesetting.utils import registry
 try:
     from django.urls import reverse
 except ImportError:
@@ -47,3 +48,8 @@ class RuntimeSettingAdmin(ModelAdmin):
         return DeleteSetting.as_view(queryset=self.model.objects.all(),
             admin=self, template_name='admin/delete_confirmation.html',
             success_url=reverse(url))(request=request, pk=object_id)
+
+    def has_add_permission(self, request):
+        defaults = super(RuntimeSettingAdmin, self).has_add_permission(request)
+        possible = frozenset(registry.keys())
+        return defaults and (len(possible) > 0)
