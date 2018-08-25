@@ -4,7 +4,10 @@ from __future__ import unicode_literals
 from collections import OrderedDict
 import contextlib
 import json
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.forms import Form, IntegerField
 import pytest
 from pytest_django.lazy_django import skip_if_no_django

@@ -6,7 +6,10 @@ from __future__ import division
 import contextlib
 import json
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.forms import Form, IntegerField
 import pytest
 from stagesetting.forms import CreateSettingForm, AdminFieldForm
