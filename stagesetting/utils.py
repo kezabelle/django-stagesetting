@@ -2,6 +2,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
+import warnings
+
 from django.utils.text import slugify
 from django.utils.lru_cache import lru_cache
 from functools import partial
@@ -267,6 +269,11 @@ def list_files_in_static(only_matching=None):
 
 class StaticFilesChoiceField(TypedChoiceField):
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            'StaticFilesChoiceField may be deprecated in future, or '
+            'possibly moved into a separate package',
+            FutureWarning, stacklevel=2,
+        )
         if 'choices' not in kwargs:  # pragma: no cover
             kwargs['choices'] = list_files_in_static
         if CALLABLE_CHOICES is False:
@@ -308,6 +315,11 @@ def list_files_in_default_storage(only_matching=None):
 
 class DefaultStorageFilesChoiceField(TypedChoiceField):
     def __init__(self, *args, **kwargs):
+        warnings.warn(
+            'DefaultStorageFilesChoiceField may be deprecated in future, or '
+            'possibly moved into a separate package',
+            FutureWarning, stacklevel=2,
+        )
         if 'choices' not in kwargs:  # pragma: no cover
             kwargs['choices'] = list_files_in_default_storage
         if CALLABLE_CHOICES is False:
