@@ -8,8 +8,13 @@ from stagesetting.models import RuntimeSettingWrapper, RuntimeSetting
 
 register = Library()
 
+try:
+    tag = register.assigment_tag
+except AttributeError: # Django >2.0
+    tag = register.simple_tag
 
-@register.assignment_tag(takes_context=True)
+
+@tag(takes_context=True)
 def stagesetting(context):
     if 'STAGESETTING' in context:
         wrapper = context['STAGESETTING']
