@@ -15,7 +15,7 @@ from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _, string_concat
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import FormView
 from django.views.generic import ListView
 from django.views.generic import DeleteView
@@ -100,7 +100,7 @@ class UpdateSetting(FormView):
             has_add_permission=self.request.user.has_perm('%s.has_add_permission' % app_label),
             show_save_and_continue=False,
             has_change_permission=self.request.user.has_perm('%s.has_change_permission' % app_label),
-            title=string_concat(_("Change "), self.object.pretty_key()),
+            title=' '.join(force_text(s) for s in (_("Change"), self.object.pretty_key())),  # string_concat
             original=self.object,
         )
         if self.admin:
