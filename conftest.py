@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import unicode_literals
-import django
-from django.conf import settings
+from __future__ import absolute_import, unicode_literals
+
 import os
 
+import django
+from django.conf import settings
 
 HERE = os.path.realpath(os.path.dirname(__file__))
 
@@ -26,6 +26,14 @@ TEMPLATES = [
     },
 ]
 
+MIDDLEWARES = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
 def pytest_configure():
     if not settings.configured:
         settings.configure(
@@ -47,15 +55,8 @@ def pytest_configure():
             ),
             # these are the default in 1.8, so we should make sure we
             # work with those.
-            MIDDLEWARE_CLASSES=(
-                'django.contrib.sessions.middleware.SessionMiddleware',
-                'django.middleware.common.CommonMiddleware',
-                'django.middleware.csrf.CsrfViewMiddleware',
-                'django.contrib.auth.middleware.AuthenticationMiddleware',
-                # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-                'django.contrib.messages.middleware.MessageMiddleware',
-                'django.middleware.clickjacking.XFrameOptionsMiddleware',
-            ),
+            MIDDLEWARE_CLASSES=MIDDLEWARES,
+            MIDDLEWARE=MIDDLEWARES,
             BASE_DIR=HERE,
             SITE_ID=1,
             STATIC_URL='/__s__/',
@@ -66,9 +67,9 @@ def pytest_configure():
             PASSWORD_HASHERS=(
                 'django.contrib.auth.hashers.MD5PasswordHasher',
             ),
-			TEMPLATE_CONTEXT_PROCESSORS=TEMPLATE_CONTEXT_PROCESSORS,
-			TEMPLATE_LOADERS=TEMPLATE_LOADERS,
-			TEMPLATES=TEMPLATES,
+            TEMPLATE_CONTEXT_PROCESSORS=TEMPLATE_CONTEXT_PROCESSORS,
+            TEMPLATE_LOADERS=TEMPLATE_LOADERS,
+            TEMPLATES=TEMPLATES,
             SILENCED_SYSTEM_CHECKS = ['1_8.W001'],
         )
     if hasattr(django, 'setup'):
