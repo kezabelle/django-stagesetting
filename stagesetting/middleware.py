@@ -2,13 +2,17 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import logging
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
 from .models import RuntimeSettingWrapper, RuntimeSetting
 
 
 logger = logging.getLogger(__name__)
 
 
-class ApplyRuntimeSettings(object):
+class ApplyRuntimeSettings(MiddlewareMixin):
     __slots__ = ()
 
     def get_model(self):
